@@ -2,9 +2,9 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet   
 */
- define(['N/ui/serverWidget'],
+ define(['N/runtime', 'N/record', 'N/format', './libs/2win_lib_search_nominas_de_pago.js'],
 
-    function(serverWidget) {
+    function(runtime, record, format, nominas) {
 
         function onRequest(context) {
             var bootstrap = '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">';
@@ -28,7 +28,7 @@
             
             var titulo = `<h1>Carga Para Nominas de Pago</h1>`
             var inputFile = `
-                <form method="POST" action="" enctype="multipart/form-data">
+                <form class="primary_form" method="POST" action="" enctype="multipart/form-data">
                     <label class="test" id="label__text" >
                         <div id="text__file">
                             Adjuntar Archivo
@@ -50,153 +50,311 @@
                     }
                 </script>
             `;
+
+            var firstStyle = `
+                <style>
+                    *{
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    body{
+                        display: grid;
+                        grid-template-rows: 45% 10%;
+                    }
+                    .upload__file{
+                        display:none;
+                    }
+                    .primary_form{
+                        width: 30%;
+                        display: grid;
+                        grid-template-columns: repeat(3,2fr);
+                        grid-template-areas: 
+                            "a a b";
+                    }
+                    .container-form{
+                        width: 100%;
+                        height:100vh;
+                    }
+                    .titulo{
+                        margin-left: 10%;
+                        margin-right: 10%;
+                        padding-top: 50px;
+                        font-size: 18px;
+                    }
+                    .form-input{
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 50%;
+                    }
+                    #text__file, #btn__submit{
+                        border: 1px solid black;
+                        height: 60px;
+                        display: grid;
+                        align-content: center;
+                        cursor: pointer;
+                        font-size: 20px;
+                        font-weight: 300;
+                    }
+                    #label__text{
+                        grid-area: a;
+                        width: 100%;
+                    }
+                    #text__file{
+                        margin-right: 10px;
+                        padding-left: 15px;
+                        text-align: start;
+                    }
+                    #btn__submit > input{
+                        background: none;
+                        color: #FFFF;
+                        border: none;
+                        height: inherit;
+                    }
+                    #btn__submit{
+                        grid-area: b;
+                        width: 90%;
+                        color: #FFFF;
+                        background-color: rgb(70, 70, 70);
+                    }
+                    #btn__submit:hover{
+                        background-color: rgb(88, 88, 88);
+                    }
+                    .alert-form{
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        position: fixed;
+                    }
+                    .alert{
+                        margin-top: 10px;
+                        width: 18%;
+                    }
+                    #text__alert{
+                        position: relative;
+                        margin: auto;
+                    }
+                    .payroll__loaded{
+                        display: grid;
+                        justify-content: center;
+                        justify-self: center;
+                        width: 650px;
+                    }
+                    .payroll__loaded > .btn{
+                        width: 40%;
+                        justify-self: center;
+                        margin-top: 6px;
+                    }
+                    .form_btn_payroll{
+                        width: 100%;
+                        display: grid;
+                        justify-content: center;
+                    }
+                </style>
+            `
     
             var formUploadFile = `
                     <head>
-                        <style>
-                            *{
-                                margin: 0;
-                                padding: 0;
-                                box-sizing: border-box;
-                            }
-                            .upload__file{
-                                display:none;
-                            }
-                            form{
-                                width: 30%;
-                                display: grid;
-                                grid-template-columns: repeat(3,2fr);
-                                grid-template-areas: 
-                                    "a a b";
-                            }
-                            .container-form{
-                                width: 100%;
-                                height:100vh;
-                            }
-                            .titulo{
-                                margin-left: 10%;
-                                margin-right: 10%;
-                                padding-top: 50px;
-                                font-size: 18px;
-                            }
-                            .form-input{
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                height: 50%;
-                            }
-                            #text__file, #btn__submit{
-                                border: 1px solid black;
-                                height: 60px;
-                                text-align: center;
-                                display: grid;
-                                align-content: center;
-                                cursor: pointer;
-                            }
-                            #label__text{
-                                grid-area: a;
-                                width: 100%;
-                            }
-                            #text__file{
-                                margin-right: 4px;
-                            }
-                            #btn__submit > input{
-                                background: none;
-                                color: #FFFF;
-                                border: none;
-                                height: inherit;
-                            }
-                            #btn__submit{
-                                grid-area: b;
-                                width: 100%;
-                                color: #FFFF;
-                                background-color: rgb(70, 70, 70);
-                            }
-                            #btn__submit:hover{
-                                background-color: rgb(88, 88, 88);
-                            }
-                            .alert-form{
-                                width: 100%;
-                                display: flex;
-                                justify-content: center;
-                                position: fixed;
-                            }
-                            .alert{
-                                width: 18%;
-                            }
-                            #text__alert{
-                                position: relative;
-                                margin: auto;
-                            }
-                            
-                            
-                        </style>
+                        ${firstStyle}
                         ${bootstrap}
                     </head>
-                    <body>
-                        <div class="container-form">
-                            <div class="titulo">
-                                ${titulo}
-                            </div>
-                            <div class="form-input">
-                                ${inputFile}
-                            </div>
+                    <div class="container-form">
+                        <div class="titulo">
+                            ${titulo}
                         </div>
-
-                        ${scriptsBootstrap}
-                    </body>
+                        <div class="form-input">
+                            ${inputFile}
+                        </div>
+                    </div>
                 `;
             if(context.request.method === 'GET'){
                 //TODO carga de archivo csv en netsuite.
-                context.response.write(formUploadFile);
+                var firstHtml = `
+                    ${formUploadFile}
+                    ${scriptsBootstrap}
+                `
+                context.response.write(firstHtml);
                 
                 
             } else {
                 //TODO Validación de extensión de archivo,  si es CSV se guardara en el file cabinet, si no, mostrará alerta indicando que se debe adjuntar un archivo de tipo CSV.
                 try{
                     var fileObj = context.request.files.file;
-                    // log.audit("fileObj", fileObj.fileType.toLowerCase())
-                    var html = ``;
-                    if(fileObj.fileType.toLowerCase() ==='csv'){
-                        fileObj.folder = 3318;
-                        var id = fileObj.save();
-                        html = `
-                            ${formUploadFile}
-                        `
-                        //TODO aplicar redirección hacia otro suitelet desplegado en netsuite (se debe crear), utilizar módulo N/https con su metodo sendRedirect().
+                    if(fileObj){
+                        var nameFile = fileObj.name;
+                        var date = format.parse({
+                            value: new Date(),
+                            type: format.Type.DATE
+                        });
+                        
+                        if(fileObj.fileType.toLowerCase() ==='csv'){
+                            fileObj.folder = 3318;
+                            var id = fileObj.save();
+                            log.debug("id archivo cargado", id);
+                            var datosNomina={
+                                user : runtime.getCurrentUser().name,
+                                name_file: nameFile,
+                                date_time: date,
+                                state: "Pendiente"
+                            }
+                            log.debug("Datos Registro Nómina",datosNomina)
 
-                    }else {
-                        var alerta = `
-                            ${svg}
-                            <div class="alert-form" id="alert-form">
-                                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                                    <div id="text__alert">
-                                        El Archivo debe ser de extensión CSV.
-                                    </div>
-                                </div>
+                            var objRecord  = record.create({
+                                type: "customrecord_2win_regist_nominas_de_pago",
+                                isDynamic: true
+                            });
+                            objRecord.setValue({
+                                fieldId: 'custrecord_user',
+                                value: datosNomina.user,
+                                ignoreFieldChange: true
+                            });
+                            objRecord.setValue({
+                                fieldId: 'custrecord_name_file',
+                                value: datosNomina.name_file,
+                                ignoreFieldChange: true
+                            });
+                            objRecord.setValue({
+                                fieldId: 'custrecord_date_time',
+                                value: datosNomina.date_time,
+                                ignoreFieldChange: true
+                            });
+                            objRecord.setValue({
+                                fieldId: 'custrecord_state',
+                                value: datosNomina.state,
+                                ignoreFieldChange: true
+                            });
+                            let idRecord = objRecord.save({
+                                enableSourcing: false,
+                                ignoreMandatoryFields: false
+                            });
+                            log.debug("id registro nuevo", idRecord);
+
+                            var textPayrollLoaded = `
+                            <div class="payroll__loaded">
+                                <h3>N&oacute;mina cargada exitosamente, te notificaremos
+                                cuando esten registrados todos los pagos.</h3>
+                                <br>
+                                <form class="form_btn_payroll" method="POST" action="">
+                                    <input type="text" name="payroll" value="nomina" hidden>
+                                    <button type="submit" class="btn btn-primary">Ver Estado de Nóminas</button>
+                                </form>
+                                
                             </div>
-                            <script>setTimeout();</script>
-                        `
-                        html = `
-                            <script>
-                                setTimeout(function(){
-                                    var mensajeAlerta = document.getElementById("alert-form");
-                                    mensajeAlerta.style.display="none";
-                                }, 5000)
-                            </script>
-                            ${alerta}
+                        `;
+                        var secondHtml = `
                             ${formUploadFile}
+                            ${textPayrollLoaded}
                             ${scriptsBootstrap}
                         `
+                        context.response.write(secondHtml);
+
+                        }else {
+                            var alerta = `
+                                ${svg}
+                                <div class="alert-form" id="alert-form">
+                                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                                        <div id="text__alert">
+                                            El Archivo debe ser de extensión CSV.
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>setTimeout();</script>
+                            `
+                            var html = `
+                                <script>
+                                    setTimeout(function(){
+                                        var mensajeAlerta = document.getElementById("alert-form");
+                                        mensajeAlerta.style.display="none";
+                                    }, 5000)
+                                </script>
+                                ${alerta}
+                                ${formUploadFile}
+                                ${scriptsBootstrap}
+                            `
+                            context.response.write(html);
+                        }
+                        
+                    
+                    } else{
+                        var titulo_lista = '<h1>N&oacute;minas de Pago</h1>'
+                        var resultSearchNominas = nominas.searchPayroll();
+                        log.debug("Cantidad de registros", resultSearchNominas.length)
+                        var tablePayroll = resultSearchNominas.map((item)=>{
+                            return `
+                                <div>
+                                    <input type="text" class="form-control" id="input__name__file" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" value="${item.name_file}" disabled>
+                                    <input type="text" class="form-control" id="input__date__time" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" value="${item.date_time}" disabled>
+                                    <input type="text" class="form-control" id="input__state" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" value="${item.state}" disabled>
+                                </div>
+                            `
+                        });
+                        tablePayroll = tablePayroll.toString().replace(/,/gi, '');
+                        var secondStyle = `
+                            <style>
+                                *{
+                                    margin: 0;
+                                    padding: 0;
+                                    box-sizing: border-box;
+                                }
+                                .container-form{
+                                    width: 100%;
+                                    height:100vh;
+                                }
+                                .titulo{
+                                    margin-left: 10%;
+                                    margin-right: 10%;
+                                    padding-top: 50px;
+                                    font-size: 18px;
+                                }
+                                .table{
+                                    width: 100%;
+                                    display: grid;
+                                    justify-content: center;
+                                    margin-top: 30px;
+                                }
+                                .table > div > input{
+                                    border: 2px solid black;
+                                    margin: 12px;
+                                    height: 32px;
+                                    font-size: 20px;
+                                    text-align: center;
+                                }
+                                #input__name__file{
+                                    width: 460px;
+                                }
+                                #input__date__time{
+                                    width: 260px;
+                                }
+                                #input__state{
+                                    width: 205px;
+                                }
+                                .table > div{
+                                    width: 100%;
+                                }
+                            </style>
+                        `
+                        var html2 = `
+                            <head>
+                                ${secondStyle}
+                            </head>
+                            <div class="container-form">
+                                <div class="titulo">
+                                    ${titulo_lista}
+                                </div>
+                                <div class="table">
+                                    ${tablePayroll}
+                                </div>
+                            </div>
+                        `;
+                        context.response.write(html2);
                     }
-                
-                    context.response.write(html);
+                    
                 } catch(error){
                     log.error("error", error.message);
                 }
             }
-            
         }
 
         return {
