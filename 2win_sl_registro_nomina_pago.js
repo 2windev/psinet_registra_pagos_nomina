@@ -2,9 +2,9 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet   
 */
- define(['N/runtime', 'N/record', 'N/format', './libs/2win_lib_search_nominas_de_pago.js'],
+ define(['N/runtime', 'N/record', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js'],
 
-    function(runtime, record, format, nominas) {
+    function(runtime, record, format, nominas, process) {
 
         function onRequest(context) {
             var bootstrap = '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">';
@@ -26,7 +26,7 @@
                </svg>
            `
             
-            var titulo = `<h1>Carga Para Nominas de Pago</h1>`
+            var titulo = `<h1>Carga Para N&oacute;minas de Pago</h1>`
             var inputFile = `
                 <form class="primary_form" method="POST" action="" enctype="multipart/form-data">
                     <label class="test" id="label__text" >
@@ -60,13 +60,13 @@
                     }
                     body{
                         display: grid;
-                        grid-template-rows: 45% 10%;
+                        grid-template-rows: 50% 10%;
                     }
                     .upload__file{
                         display:none;
                     }
                     .primary_form{
-                        width: 30%;
+                        width: 530px;
                         display: grid;
                         grid-template-columns: repeat(3,2fr);
                         grid-template-areas: 
@@ -79,7 +79,7 @@
                     .titulo{
                         margin-left: 10%;
                         margin-right: 10%;
-                        padding-top: 50px;
+                        padding-top: 60px;
                         font-size: 18px;
                     }
                     .form-input{
@@ -128,8 +128,8 @@
                         position: fixed;
                     }
                     .alert{
-                        margin-top: 10px;
-                        width: 18%;
+                        margin-top: 5px;
+                        width: 350px;
                     }
                     #text__alert{
                         position: relative;
@@ -150,6 +150,11 @@
                         width: 100%;
                         display: grid;
                         justify-content: center;
+                        grid-template-columns: 1fr;
+                    }
+                    .btn-primary{
+                        width: 50%;
+                        justify-self: center;
                     }
                 </style>
             `
@@ -191,14 +196,13 @@
                         if(fileObj.fileType.toLowerCase() ==='csv'){
                             fileObj.folder = 3318;
                             var id = fileObj.save();
-                            log.debug("id archivo cargado", id);
+
                             var datosNomina={
                                 user : runtime.getCurrentUser().name,
                                 name_file: nameFile,
                                 date_time: date,
                                 state: "Pendiente"
                             }
-                            log.debug("Datos Registro Nómina",datosNomina)
 
                             var objRecord  = record.create({
                                 type: "customrecord_2win_regist_nominas_de_pago",
@@ -224,31 +228,40 @@
                                 value: datosNomina.state,
                                 ignoreFieldChange: true
                             });
-                            let idRecord = objRecord.save({
+                            var idRecord = objRecord.save({
                                 enableSourcing: false,
                                 ignoreMandatoryFields: false
                             });
+
                             log.debug("id registro nuevo", idRecord);
+                            log.debug("id archivo cargado", id);
 
-                            var textPayrollLoaded = `
-                            <div class="payroll__loaded">
-                                <h3>N&oacute;mina cargada exitosamente, te notificaremos
-                                cuando esten registrados todos los pagos.</h3>
-                                <br>
-                                <form class="form_btn_payroll" method="POST" action="">
-                                    <input type="text" name="payroll" value="nomina" hidden>
-                                    <button type="submit" class="btn btn-primary">Ver Estado de Nóminas</button>
-                                </form>
+                            var resultSearchNominas = nominas.searchPayroll();
+                            var namePayroll = resultSearchNominas.map((item)=>{
                                 
-                            </div>
-                        `;
-                        var secondHtml = `
-                            ${formUploadFile}
-                            ${textPayrollLoaded}
-                            ${scriptsBootstrap}
-                        `
-                        context.response.write(secondHtml);
-
+                                if(item.internal_id == idRecord){
+                                    return item.name_file;  
+                                }
+                            });
+                            namePayroll = namePayroll.toString().replace(/,/gi, '');
+                            process.readPayrollFile(namePayroll);
+                            var textPayrollLoaded = `
+                                <div class="payroll__loaded">
+                                    <h3>N&oacute;mina cargada exitosamente, te notificaremos
+                                    cuando esten registrados todos los pagos.</h3>
+                                    <br>
+                                    <form class="form_btn_payroll" method="POST" action="">
+                                        <input type="text" name="payroll" value="nomina" hidden>
+                                        <button type="submit" class="btn btn-primary btn-lg">Ver Estado de Nóminas</button>
+                                    </form>
+                                </div>
+                            `;
+                            var secondHtml = `
+                                ${formUploadFile}
+                                ${textPayrollLoaded}
+                                ${scriptsBootstrap}
+                            `
+                            context.response.write(secondHtml);
                         }else {
                             var alerta = `
                                 ${svg}
@@ -280,7 +293,7 @@
                     } else{
                         var titulo_lista = '<h1>N&oacute;minas de Pago</h1>'
                         var resultSearchNominas = nominas.searchPayroll();
-                        log.debug("Cantidad de registros", resultSearchNominas.length)
+                        log.debug("Cantidad de registros", resultSearchNominas.length);
                         var tablePayroll = resultSearchNominas.map((item)=>{
                             return `
                                 <div>
