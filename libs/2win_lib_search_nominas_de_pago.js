@@ -9,6 +9,7 @@ define(['N/search'],
             var structureSearch = {
                 type: "customrecord_2win_regist_nominas_de_pago",
                 columns: [
+                    search.createColumn({ name: "internalid", label: "internal_id" }),
                     search.createColumn({ name: "custrecord_user", label: "user" }),
                     search.createColumn({ name: "custrecord_name_file", label: "name_file" }),
                     search.createColumn({ name: "custrecord_date_time", label: "date_time" }),
