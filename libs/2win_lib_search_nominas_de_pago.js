@@ -6,7 +6,7 @@
 define(['N/search'], 
     function(search){
         var searchPayroll = () => {
-            var structureSearch = {
+            var structureSearchPayroll = {
                 type: "customrecord_2win_regist_nominas_de_pago",
                 columns: [
                     search.createColumn({ name: "internalid", label: "internal_id" }),
@@ -16,7 +16,28 @@ define(['N/search'],
                     search.createColumn({ name: "custrecord_state", label: "state" }),
                 ]
             }
-            return getDataSearch(structureSearch);
+            return getDataSearch(structureSearchPayroll);
+        }
+
+        var searchCustomer = (name) => {
+            var structureSearchCustomer = {
+                type: search.Type.CUSTOMER,
+                filters: [
+                  ['entityid', 'is', name],
+                ],
+                columns: [
+                    search.createColumn({ name: 'internalid', label: 'internal_id' }),
+                    search.createColumn({ name: 'entityid', sort: search.Sort.ASC, label: "name" })
+                ]
+            }
+            var result = getDataSearch(structureSearchCustomer);
+            var idCustomer;
+            for(i in result){
+                if(result[i].name === name ){
+                    idCustomer = result[i].internal_id;
+                }
+            }
+            return idCustomer;
         }
 
     /**
@@ -44,6 +65,7 @@ define(['N/search'],
     };
 
     return {
-        searchPayroll : searchPayroll
+        searchPayroll : searchPayroll,
+        searchCustomer : searchCustomer
     }
 });
