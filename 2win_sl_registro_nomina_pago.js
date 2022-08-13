@@ -204,36 +204,8 @@
                                 state: "Pendiente"
                             }
 
-                            var objRecord  = record.create({
-                                type: "customrecord_2win_regist_nominas_de_pago",
-                                isDynamic: true
-                            });
-                            objRecord.setValue({
-                                fieldId: 'custrecord_user',
-                                value: datosNomina.user,
-                                ignoreFieldChange: true
-                            });
-                            objRecord.setValue({
-                                fieldId: 'custrecord_name_file',
-                                value: datosNomina.name_file,
-                                ignoreFieldChange: true
-                            });
-                            objRecord.setValue({
-                                fieldId: 'custrecord_date_time',
-                                value: datosNomina.date_time,
-                                ignoreFieldChange: true
-                            });
-                            objRecord.setValue({
-                                fieldId: 'custrecord_state',
-                                value: datosNomina.state,
-                                ignoreFieldChange: true
-                            });
-                            var idRecord = objRecord.save({
-                                enableSourcing: false,
-                                ignoreMandatoryFields: false
-                            });
-
-                            log.debug("id registro nuevo", idRecord);
+                            var idRecord = process.registerPayroll(datosNomina);
+                            log.debug("id registro nuevo en trasacciones", idRecord);
                             log.debug("id archivo cargado", id);
 
                             var resultSearchNominas = nominas.searchPayroll();
@@ -244,7 +216,8 @@
                                 }
                             });
                             namePayroll = namePayroll.toString().replace(/,/gi, '');
-                            process.readPayrollFile(namePayroll);
+                            var payments = process.readPayrollFile(namePayroll);
+                            log.debug("id registros de pagos", payments);
                             var textPayrollLoaded = `
                                 <div class="payroll__loaded">
                                     <h3>N&oacute;mina cargada exitosamente, te notificaremos
