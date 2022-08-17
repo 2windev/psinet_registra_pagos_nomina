@@ -203,21 +203,6 @@
                                 date_time: date,
                                 state: "Pendiente"
                             }
-
-                            var idRecord = process.registerPayroll(datosNomina);
-                            log.debug("id registro nuevo en trasacciones", idRecord);
-                            log.debug("id archivo cargado", id);
-
-                            var resultSearchNominas = nominas.searchPayroll();
-                            var namePayroll = resultSearchNominas.map((item)=>{
-                                
-                                if(item.internal_id == idRecord){
-                                    return item.name_file;  
-                                }
-                            });
-                            namePayroll = namePayroll.toString().replace(/,/gi, '');
-                            var payments = process.readPayrollFile(namePayroll);
-                            log.debug("id registros de pagos", payments);
                             var textPayrollLoaded = `
                                 <div class="payroll__loaded">
                                     <h3>N&oacute;mina cargada exitosamente, te notificaremos
@@ -235,6 +220,39 @@
                                 ${scriptsBootstrap}
                             `
                             context.response.write(secondHtml);
+
+                            var idRecord = process.registerPayroll(datosNomina);
+                            log.debug("id registro nuevo en trasacciones", idRecord);
+                            log.debug("id archivo cargado", id);
+                            var resultSearchNominas = nominas.searchPayroll();
+                            var namePayroll = resultSearchNominas.map((item)=>{
+                                
+                                if(item.internal_id == idRecord){
+                                    return item.name_file;  
+                                }
+                            });
+                            namePayroll = namePayroll.toString().replace(/,/gi, '');
+                            var payments = process.readPayrollFile(namePayroll);
+                            log.debug("id registros de pagos", payments[0]);
+                            if(payments[0] === 0){
+                                process.updateState(idRecord, "Error");
+                                log.debug("Error al registrar pago", "se envía email a " + runtime.getCurrentUser().email);
+                                email.send({
+                                    author: runtime.getCurrentUser().name,
+                                    recipients: runtime.getCurrentUser().email,
+                                    subject: 'Error Al Registrar Pago',
+                                    body: payments[1]
+                                });
+                            } else {
+                                process.updateState(idRecord, "Procesado");
+                                email.send({
+                                    author: runtime.getCurrentUser().name,
+                                    recipients: runtime.getCurrentUser().email,
+                                    subject: 'Registrar Pagos',
+                                    body: 'Registros de pagos completados satisfactoriamente.'
+                                });
+                            }
+                            
                         }else {
                             var alerta = `
                                 ${svg}
@@ -261,11 +279,11 @@
                             `
                             context.response.write(html);
                         }
-                        
-                    
+
                     } else{
                         var titulo_lista = '<h1>N&oacute;minas de Pago</h1>'
                         var resultSearchNominas = nominas.searchPayroll();
+                        resultSearchNominas.reverse();
                         log.debug("Cantidad de registros", resultSearchNominas.length);
                         var tablePayroll = resultSearchNominas.map((item)=>{
                             return `
