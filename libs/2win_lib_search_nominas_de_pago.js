@@ -19,25 +19,56 @@ define(['N/search'],
             return getDataSearch(structureSearchPayroll);
         }
 
-        var searchCustomer = (name) => {
+        var searchCustomer = (rut) => {
             var structureSearchCustomer = {
                 type: search.Type.CUSTOMER,
                 filters: [
-                  ['entityid', 'is', name],
+                  ['custentity_2win_rut', 'is', rut],
                 ],
                 columns: [
                     search.createColumn({ name: 'internalid', label: 'internal_id' }),
-                    search.createColumn({ name: 'entityid', sort: search.Sort.ASC, label: "name" })
+                    // search.createColumn({ name: 'custentity_2win_rut', label: "rut" }),
+                    // search.createColumn({ name: 'entityid', sort: search.Sort.ASC, label: "name" })
                 ]
             }
-            var result = getDataSearch(structureSearchCustomer);
-            var idCustomer;
-            for(i in result){
-                if(result[i].name === name ){
-                    idCustomer = result[i].internal_id;
+            var idCustomer = getDataSearch(structureSearchCustomer);
+            log.debug("Result search Customer", idCustomer);
+            return idCustomer[0].internal_id;
+        }
+
+        var searchAmount =(rut) =>{
+            try{
+                var structureSearchAmount = {
+                    type: search.Type.TRANSACTION,
+                    filters:
+                    [
+                        ["type","anyof","VendBill","CustInvc"],
+                        "AND",
+                        ["subsidiary","anyof",5],
+                        "AND",
+                        ["custbody_2winrutapipos","is",rut],
+                        "AND",
+                        ["status","anyof","CustInvc:A"],
+                        "AND",
+                        ["mainline","is","T"]
+                    ],
+                    columns:
+                    [
+                        search.createColumn({name: "type", label: "type"}),
+                        search.createColumn({name: "subsidiarynohierarchy", label: "subsidiary"}),
+                        search.createColumn({name: "custbody_2winrutapipos", label: "rut"}),
+                        search.createColumn({name: "tranid", label: "doc_number"}),
+                        search.createColumn({name: "custbody_2winfolioacepta", label: "folio_acepta"}),
+                        search.createColumn({name: "amount", label: "amount"}),
+                        search.createColumn({name: "grossamount", label: "gross"}),
+                        search.createColumn({name: "taxamount", label: "tax"})
+                    ]
                 }
+                return getDataSearch(structureSearchAmount);
+            } catch (e){
+                log.debug("error - searchAmount", e.message)
             }
-            return idCustomer;
+            
         }
 
     /**
@@ -66,6 +97,7 @@ define(['N/search'],
 
     return {
         searchPayroll : searchPayroll,
-        searchCustomer : searchCustomer
+        searchCustomer : searchCustomer,
+        searchAmount : searchAmount
     }
 });
