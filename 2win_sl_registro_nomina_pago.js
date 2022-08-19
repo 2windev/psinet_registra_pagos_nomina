@@ -2,9 +2,9 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet   
 */
- define(['N/runtime', 'N/record', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js'],
+ define(['N/runtime', 'N/email', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js'],
 
-    function(runtime, record, format, nominas, process) {
+    function(runtime, email, format, nominas, process) {
 
         function onRequest(context) {
             var bootstrap = '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">';
@@ -221,32 +221,33 @@
                             `
                             context.response.write(secondHtml);
 
-                            var idRecord = process.registerPayroll(datosNomina);
-                            log.debug("id registro nuevo en trasacciones", idRecord);
+                            var idRecordPayroll = process.registerPayroll(datosNomina);
+                            log.debug("id registro tabla registro nómina", idRecordPayroll);
                             log.debug("id archivo cargado", id);
                             var resultSearchNominas = nominas.searchPayroll();
                             var namePayroll = resultSearchNominas.map((item)=>{
                                 
-                                if(item.internal_id == idRecord){
+                                if(item.internal_id == idRecordPayroll){
                                     return item.name_file;  
                                 }
                             });
                             namePayroll = namePayroll.toString().replace(/,/gi, '');
                             var payments = process.readPayrollFile(namePayroll);
-                            log.debug("id registros de pagos", payments[0]);
-                            if(payments[0] === 0){
-                                process.updateState(idRecord, "Error");
+                            // log.debug("Error Property?", payments[0].hasOwnProperty("error"));
+                            if(payments[0].hasOwnProperty("error")){
+                                process.updateState(idRecordPayroll, "Error");
                                 log.debug("Error al registrar pago", "se envía email a " + runtime.getCurrentUser().email);
                                 email.send({
-                                    author: runtime.getCurrentUser().name,
+                                    author: runtime.getCurrentUser().id,
                                     recipients: runtime.getCurrentUser().email,
-                                    subject: 'Error Al Registrar Pago',
-                                    body: payments[1]
+                                    subject: 'Error Al Registrar los Pagos',
+                                    body: 'Se ha identificado el siguiente Error al registrar los pagos de la nómina id: ' + id + '\n' + payments[0].error
                                 });
                             } else {
-                                process.updateState(idRecord, "Procesado");
+                                log.debug("id registros de pagos", payments);
+                                process.updateState(idRecordPayroll, "Procesado");
                                 email.send({
-                                    author: runtime.getCurrentUser().name,
+                                    author: runtime.getCurrentUser().id,
                                     recipients: runtime.getCurrentUser().email,
                                     subject: 'Registrar Pagos',
                                     body: 'Registros de pagos completados satisfactoriamente.'
