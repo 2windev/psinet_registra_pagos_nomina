@@ -11,26 +11,10 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                 type: "customrecord_2win_regist_nominas_de_pago",
                 isDynamic: true
             });
-            objRecord.setValue({
-                fieldId: 'custrecord_user',
-                value: datosNomina.user,
-                ignoreFieldChange: true
-            });
-            objRecord.setValue({
-                fieldId: 'custrecord_name_file',
-                value: datosNomina.name_file,
-                ignoreFieldChange: true
-            });
-            objRecord.setValue({
-                fieldId: 'custrecord_date_time',
-                value: datosNomina.date_time,
-                ignoreFieldChange: true
-            });
-            objRecord.setValue({
-                fieldId: 'custrecord_state',
-                value: datosNomina.state,
-                ignoreFieldChange: true
-            });
+            objRecord.setValue({ fieldId: 'custrecord_user', value: datosNomina.user, ignoreFieldChange: true });
+            objRecord.setValue({ fieldId: 'custrecord_name_file', value: datosNomina.name_file, ignoreFieldChange: true });
+            objRecord.setValue({ fieldId: 'custrecord_date_time', value: datosNomina.date_time, ignoreFieldChange: true });
+            objRecord.setValue({ fieldId: 'custrecord_state', value: datosNomina.state, ignoreFieldChange: true });
             var idRecord = objRecord.save({
                 enableSourcing: false,
                 ignoreMandatoryFields: false
@@ -44,48 +28,51 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             var data = [];
             var json = {};
             var payments = [];
-            payrollFile.lines.iterator().each(function (line) {
+            var error = {};
+            var iterator = payrollFile.lines.iterator();
+            iterator.each(function (){ return false; }) // Para Saltar el header del CSV.
+            iterator.each(function (line) {
                 data = line.value.split(",");
                 // log.debug("arreglo data nómina", data);
                 for(i in data){
                     json[i] = data[i];
                 }
-
                 //TODO crear registro en tabla transacciones de tipo PAGO.
                 try{
+                    log.debug("json", json)
                     var objRecord = record.create({
                         type: record.Type.CUSTOMER_PAYMENT,
                         isDynamic: true
                     });
-                    var name = json[0];
-                    log.debug("name", name);
-                    var idCustomer = nominas.searchCustomer(name);
-                    log.debug("idCustomer", idCustomer);
-                    objRecord.setValue({
-                        fieldId: "customer",
-                        value: idCustomer // 42866
-                    });
-                    objRecord.setValue({
-                        fieldId: "trandate",
-                        value: format.parse({ value: '12/08/2022', type: format.Type.DATE })
-                    });
-                    objRecord.setValue({
-                        fieldId: "subsidiary",
-                        value: 5 // 5 -> pruebas desarrollo || 20 -> Proyectos y Servicios NetSuite
-                    });
-                    objRecord.setValue({
-                        fieldId: "payment",
-                        value: json[3]
-                    });
+                    var rut = json[5];
+                    var resultSearch = nominas.searchAmount(rut);
+                    // for(i in resultSearch){
+                    //     log.debug("resultSearch", resultSearch[i]);
+                    // }
+                    log.debug("resultSearch", resultSearch);
+                    // var idCustomer = nominas.searchCustomer(rut);
+                    objRecord.setValue({ fieldId: "customer", value: nominas.searchCustomer(rut) }); // 42866
+                    objRecord.setValue({ fieldId: "trandate",value: format.parse({ value: new Date(), type: format.Type.DATE }) });
+                    objRecord.setValue({ fieldId: "subsidiary",value: resultSearch[0].subsidiary }); // 5 -> pruebas desarrollo || 20 -> Proyectos y Servicios NetSuite
+                    objRecord.setValue({ fieldId: "payment",value: resultSearch[0].amount });
+
+                    // TODO insertar valor en campo ref doc del registro de pago.
+                    // objRecord.setValue({ fieldId: " ?? ",value: " ?? " });
+                    // var objRecordLine = objRecord.selectNewLine({ sublistId: 'apply' });
+                    // objRecordLine.setCurrentSublistValue({ sublistId: 'apply', fieldId: 'refnum', value: ?? });
+                    // objRecordLine.commitLine({ sublistId: 'apply' });
+
                     var idRecordPago = objRecord.save({
                         enableSourcing: false,
                         ignoreMandatoryFields: false
                     });
                     payments.push(idRecordPago);
                 } catch(e){
-                    log.debug("Error en registro de pagos", e.message); 
-                    return [0,e.message];
+                    // log.debug("Error en registro de pagos", e.message); 
+                    error = {"error" : e.message}
+                    payments.push(error);
                 }
+                return true;
             });
             return payments;
         }
