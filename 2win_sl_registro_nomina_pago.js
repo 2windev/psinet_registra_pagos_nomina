@@ -178,8 +178,14 @@
                 var firstHtml = `
                     ${formUploadFile}
                     ${scriptsBootstrap}
-                `
+                `;
+
+                //TODO Descarga archivo vía SFTP.
+                process.downloadFileForSftp();
+
                 context.response.write(firstHtml);
+
+                
                 
                 
             } else {
