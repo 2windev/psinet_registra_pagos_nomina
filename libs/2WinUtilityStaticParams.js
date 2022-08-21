@@ -53,10 +53,9 @@ define(['N/search'], function(search) {
             throw new Error(e);
         }
     }
-
-    var dataConfig = getDataConfig();
     
     function getParametro(param) {
+        var dataConfig = getDataConfig();
         var result = dataConfig.filter(function(search) {
             if (search.name === param)
                 return search;
