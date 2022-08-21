@@ -3,8 +3,8 @@
  * @module ./2win_lib_procesar_datos_nomina.js
  * @NModuleScope Public
  **/
-define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'], 
-    function(file, record, nominas, format) {
+define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js', './2WinConexionSftp.js'], 
+    function(file, record, nominas, format, params, sftp) {
 
         function registerPayroll(datosNomina){
             var objRecord  = record.create({
@@ -46,17 +46,14 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                     });
                     var rut = json[5];
                     var resultSearch = nominas.searchAmount(rut);
-                    // for(i in resultSearch){
-                    //     log.debug("resultSearch", resultSearch[i]);
-                    // }
                     log.debug("resultSearch", resultSearch);
-                    // var idCustomer = nominas.searchCustomer(rut);
                     objRecord.setValue({ fieldId: "customer", value: nominas.searchCustomer(rut) }); // 42866
                     objRecord.setValue({ fieldId: "trandate",value: format.parse({ value: new Date(), type: format.Type.DATE }) });
                     objRecord.setValue({ fieldId: "subsidiary",value: resultSearch[0].subsidiary }); // 5 -> pruebas desarrollo || 20 -> Proyectos y Servicios NetSuite
-                    objRecord.setValue({ fieldId: "payment",value: resultSearch[0].amount });
+                    objRecord.setValue({ fieldId: "payment",value: resultSearch[0].amount }); // monto total del o los pagos.
 
                     // TODO insertar valor en campo ref doc del registro de pago.
+
                     // objRecord.setValue({ fieldId: " ?? ",value: " ?? " });
                     // var objRecordLine = objRecord.selectNewLine({ sublistId: 'apply' });
                     // objRecordLine.setCurrentSublistValue({ sublistId: 'apply', fieldId: 'refnum', value: ?? });
@@ -93,10 +90,35 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             });
             
         }
+
+        function downloadFileForSftp(){
+
+            var userSftp = params.getParam('SFTP - username').text;
+            var passwordGuidSftp = params.getParam('SFTP - passwordGuid').text;
+            var urlSftp = params.getParam('SFTP - url').text;
+            var directorySftp = params.getParam('SFTP - directory Download').text;
+            var portSftp = Number(params.getParam('SFTP - port').number);
+            var hostKeySftp = params.getParam('SFTP - hostKey').text;
+            var hostKeyTypeSftp = params.getParam('SFTP - hostKeyType').text;
+
+            var paramconnectionSftp = {
+                username: userSftp,
+                passwordGuid: passwordGuidSftp,
+                url: urlSftp,
+                port: portSftp,
+                directory: directorySftp,
+                hostKey: hostKeySftp,
+                hostKeyType: hostKeyTypeSftp
+            }
+            var statusConection = sftp.setConnection(paramconnectionSftp);
+            log.debug("Lista de parametros de faturación",statusConection );
+            
+        }
         return {
             readPayrollFile : readPayrollFile,
             registerPayroll : registerPayroll,
-            updateState : updateState
+            updateState : updateState,
+            downloadFileForSftp : downloadFileForSftp
         };
     
 });
