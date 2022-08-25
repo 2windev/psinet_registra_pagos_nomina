@@ -3,7 +3,7 @@
  * @module ./2win_lib_procesar_datos_nomina.js
  * @NModuleScope Public
  **/
-define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js', './2WinConexionSftp.js'], 
+define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js', '../2WinMapConnectionSftp.js'], 
     function(file, record, nominas, format, params, sftp) {
 
         function registerPayroll(datosNomina){
@@ -92,15 +92,16 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
         }
 
         function downloadFileForSftp(){
-
+            log.debug("conexion sftp")
             var userSftp = params.getParam('SFTP - username').text;
+            log.debug("user-sftp")
             var passwordGuidSftp = params.getParam('SFTP - passwordGuid').text;
             var urlSftp = params.getParam('SFTP - url').text;
             var directorySftp = params.getParam('SFTP - directory Download').text;
             var portSftp = Number(params.getParam('SFTP - port').number);
             var hostKeySftp = params.getParam('SFTP - hostKey').text;
             var hostKeyTypeSftp = params.getParam('SFTP - hostKeyType').text;
-
+            
             var paramconnectionSftp = {
                 username: userSftp,
                 passwordGuid: passwordGuidSftp,
@@ -110,8 +111,9 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                 hostKey: hostKeySftp,
                 hostKeyType: hostKeyTypeSftp
             }
+            log.debug("params operacion", paramconnectionSftp)
             var statusConection = sftp.setConnection(paramconnectionSftp);
-            log.debug("Lista de parametros de faturación",statusConection );
+            log.debug("status conections",statusConection );
             
         }
         return {
