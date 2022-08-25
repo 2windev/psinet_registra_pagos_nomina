@@ -26,13 +26,13 @@ define(['N/search'], function(search) {
         try {
             var searchResults = [];
             var tabItem = {
-                type: "customrecord_2w_parametros_facturacion",
+                type: "customrecord_2w_parametros_operacion",
                 columns: [
                     search.createColumn({ name: "internalid", sort: search.Sort.ASC, label: "internalid" }),
                     search.createColumn({ name: "name", label: "name" }),
-                    search.createColumn({ name: "custrecord_2w_facturacion_numerico", label: "number" }),
-                    search.createColumn({ name: "custrecord_2w_facturacion_texto", label: "text" }),
-                    search.createColumn({ name: "custrecord_2w_facturacion_fecha", label: "date" }),
+                    search.createColumn({ name: "custrecord_2w_parametro_numerico", label: "number" }),
+                    search.createColumn({ name: "custrecord_2w_parametro_texto", label: "text" }),
+                    search.createColumn({ name: "custrecord_2w_parametro_fecha", label: "date" }),
                 ],
                 filters: []
             }
