@@ -3,18 +3,18 @@
  * @module ./2win_lib_procesar_datos_nomina.js
  * @NModuleScope Public
  **/
-define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js', '../2WinMapConnectionSftp.js'], 
-    function(file, record, nominas, format, params, sftp) {
+define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js'], 
+    function(file, record, nominas, format, params) {
 
         function registerPayroll(datosNomina){
             var objRecord  = record.create({
-                type: "customrecord_2win_regist_nominas_de_pago",
+                type: "customrecord_2win_archivos_pago_proces",
                 isDynamic: true
             });
-            objRecord.setValue({ fieldId: 'custrecord_user', value: datosNomina.user, ignoreFieldChange: true });
-            objRecord.setValue({ fieldId: 'custrecord_name_file', value: datosNomina.name_file, ignoreFieldChange: true });
-            objRecord.setValue({ fieldId: 'custrecord_date_time', value: datosNomina.date_time, ignoreFieldChange: true });
-            objRecord.setValue({ fieldId: 'custrecord_state', value: datosNomina.state, ignoreFieldChange: true });
+            // objRecord.setValue({ fieldId: 'custrecord_user', value: datosNomina.user, ignoreFieldChange: true });
+            objRecord.setValue({ fieldId: 'custrecord1470', value: datosNomina.name_file, ignoreFieldChange: true });
+            objRecord.setValue({ fieldId: 'custrecord1471', value: datosNomina.date_time, ignoreFieldChange: true });
+            // objRecord.setValue({ fieldId: 'custrecord_state', value: datosNomina.state, ignoreFieldChange: true });
             var idRecord = objRecord.save({
                 enableSourcing: false,
                 ignoreMandatoryFields: false
@@ -23,8 +23,11 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             return idRecord;
         }
 
-        function readPayrollFile(payroll){
-            var payrollFile = file.load({id: `SuiteScripts/psinet_registra_pagos_nomina/pago_nominas/${payroll}`});
+        function readPayrollFile(internalIdFile){
+
+            var payrollFile = file.load({
+                id: internalIdFile
+            });
             var data = [];
             var json = {};
             var payments = [];
@@ -90,37 +93,10 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             });
             
         }
-
-        function downloadFileForSftp(){
-            log.debug("conexion sftp")
-            var userSftp = params.getParam('SFTP - username').text;
-            log.debug("user-sftp")
-            var passwordGuidSftp = params.getParam('SFTP - passwordGuid').text;
-            var urlSftp = params.getParam('SFTP - url').text;
-            var directorySftp = params.getParam('SFTP - directory Download').text;
-            var portSftp = Number(params.getParam('SFTP - port').number);
-            var hostKeySftp = params.getParam('SFTP - hostKey').text;
-            var hostKeyTypeSftp = params.getParam('SFTP - hostKeyType').text;
-            
-            var paramconnectionSftp = {
-                username: userSftp,
-                passwordGuid: passwordGuidSftp,
-                url: urlSftp,
-                port: portSftp,
-                directory: directorySftp,
-                hostKey: hostKeySftp,
-                hostKeyType: hostKeyTypeSftp
-            }
-            log.debug("params operacion", paramconnectionSftp)
-            var statusConection = sftp.setConnection(paramconnectionSftp);
-            log.debug("status conections",statusConection );
-            
-        }
         return {
             readPayrollFile : readPayrollFile,
             registerPayroll : registerPayroll,
-            updateState : updateState,
-            downloadFileForSftp : downloadFileForSftp
+            updateState : updateState
         };
     
 });
