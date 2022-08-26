@@ -5,30 +5,27 @@
  **/
 define(['N/search'], 
     function(search){
-        var searchPayroll = () => {
+        function searchPayroll(){
             var structureSearchPayroll = {
-                type: "customrecord_2win_regist_nominas_de_pago",
+                type: "customrecord_2win_archivos_pago_proces", //customrecord_2win_regist_nominas_de_pago
                 columns: [
                     search.createColumn({ name: "internalid", label: "internal_id" }),
-                    search.createColumn({ name: "custrecord_user", label: "user" }),
-                    search.createColumn({ name: "custrecord_name_file", label: "name_file" }),
-                    search.createColumn({ name: "custrecord_date_time", label: "date_time" }),
-                    search.createColumn({ name: "custrecord_state", label: "state" }),
+                    search.createColumn({ name: "name", label: "name" }),
+                    search.createColumn({ name: "custrecord1470", label: "tipo_archivo" }),
+                    search.createColumn({ name: "custrecord1471", label: "fecha" }),
                 ]
             }
             return getDataSearch(structureSearchPayroll);
         }
 
-        var searchCustomer = (rut) => {
+        function searchCustomer(rut){
             var structureSearchCustomer = {
                 type: search.Type.CUSTOMER,
                 filters: [
-                  ['custentity_2win_rut', 'is', rut],
+                  ['custentity_2win_rut', 'is', rut]
                 ],
                 columns: [
-                    search.createColumn({ name: 'internalid', label: 'internal_id' }),
-                    // search.createColumn({ name: 'custentity_2win_rut', label: "rut" }),
-                    // search.createColumn({ name: 'entityid', sort: search.Sort.ASC, label: "name" })
+                    search.createColumn({ name: 'internalid', label: 'internal_id' })
                 ]
             }
             var idCustomer = getDataSearch(structureSearchCustomer);
@@ -36,7 +33,7 @@ define(['N/search'],
             return idCustomer[0].internal_id;
         }
 
-        var searchAmount =(rut) =>{
+        function searchAmount(rut){
             try{
                 var structureSearchAmount = {
                     type: search.Type.TRANSACTION,
@@ -68,8 +65,26 @@ define(['N/search'],
             } catch (e){
                 log.debug("error - searchAmount", e.message)
             }
-            
         }
+
+        function searchFilePayroll(){
+            try{
+                var objSearch = {
+                    type: 'file',
+                    filters: [
+                        ['folder', 'anyof', '3824'],
+                    ],
+                    columns: [
+                        search.createColumn({ name: 'internalid', label: 'internal_id' }),
+                        search.createColumn({ name: 'name', sort: search.Sort.ASC, label: 'name' }),
+                        search.createColumn({ name: 'filetype', label: 'file_type' })
+                    ]
+                }
+                return getDataSearch(objSearch);
+            } catch(e){
+                log.error("Error en búsqueda de archivo", e.message)
+            }
+         }
 
     /**
      * @desc Obtener datos según estructura de busqueda
@@ -98,6 +113,7 @@ define(['N/search'],
     return {
         searchPayroll : searchPayroll,
         searchCustomer : searchCustomer,
-        searchAmount : searchAmount
+        searchAmount : searchAmount,
+        searchFilePayroll : searchFilePayroll
     }
 });
