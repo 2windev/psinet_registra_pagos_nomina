@@ -5,14 +5,14 @@
  **/
 define(['N/search'], 
     function(search){
-        function searchPayroll(){
+        function searchPayroll(nameFile){
             var structureSearchPayroll = {
-                type: "customrecord_2win_archivos_pago_proces", //customrecord_2win_regist_nominas_de_pago
+                type: "customrecord_2win_archivos_pago_proces",
+                filters:[
+                    ['name', 'is', nameFile]
+                ],
                 columns: [
-                    search.createColumn({ name: "internalid", label: "internal_id" }),
-                    search.createColumn({ name: "name", label: "name" }),
-                    search.createColumn({ name: "custrecord1470", label: "tipo_archivo" }),
-                    search.createColumn({ name: "custrecord1471", label: "fecha" }),
+                    search.createColumn({ name: "name", label: "name" })
                 ]
             }
             return getDataSearch(structureSearchPayroll);
@@ -67,7 +67,13 @@ define(['N/search'],
             }
         }
 
+        /**
+         * @desc Devuelve todos los archivos de nóminas descargados en el directorio archivo_nomina
+         * @function searchFilePayroll
+         * @return Array getDataSearch()
+         */
         function searchFilePayroll(){
+            //TODO Se deberá implementar filtro para obtener archivos de nóminas especificos, ya sean estos, determinados por nombre o por fecha.
             try{
                 var objSearch = {
                     type: 'file',
