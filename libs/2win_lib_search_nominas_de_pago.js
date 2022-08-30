@@ -33,7 +33,7 @@ define(['N/search'],
             return idCustomer[0].internal_id;
         }
 
-        function searchAmount(rut){
+        function searchAmount(rut, nBoleta){
             try{
                 var structureSearchAmount = {
                     type: search.Type.TRANSACTION,
@@ -47,18 +47,17 @@ define(['N/search'],
                         "AND",
                         ["status","anyof","CustInvc:A"],
                         "AND",
-                        ["mainline","is","T"]
+                        ["mainline","is","T"],
+                        "AND", 
+                        ["custbody_2winfolioacepta","equalto",nBoleta]
                     ],
                     columns:
                     [
-                        search.createColumn({name: "type", label: "type"}),
+                        search.createColumn({name: "internalid", label: "internal_id"}),
                         search.createColumn({name: "subsidiarynohierarchy", label: "subsidiary"}),
-                        search.createColumn({name: "custbody_2winrutapipos", label: "rut"}),
                         search.createColumn({name: "tranid", label: "doc_number"}),
                         search.createColumn({name: "custbody_2winfolioacepta", label: "folio_acepta"}),
-                        search.createColumn({name: "amount", label: "amount"}),
-                        search.createColumn({name: "grossamount", label: "gross"}),
-                        search.createColumn({name: "taxamount", label: "tax"})
+                        search.createColumn({name: "grossamount", label: "gross_amount"})
                     ]
                 }
                 return getDataSearch(structureSearchAmount);
