@@ -22,7 +22,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             return idRecord;
         }
 
-        function readPayrollFile(internalIdFile){
+        function readPayrollFile(internalIdFile, extensionFile){
             var payrollFile = file.load({
                 id: internalIdFile
             });
@@ -30,20 +30,42 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             var json = {};
             var payments = [];
             var error = {};
+            var rutCliente = 0;
+            var nBoleta = 0;
             var iterator = payrollFile.lines.iterator();
-            iterator.each(function (){ return false; }) // Para saltar el header del CSV.
+            iterator.each(function (){ return false; }) // Para saltar la primera línea.
             iterator.each(function (line) {
-                data = line.value.split(",");
-                for(i in data){
-                    json[i] = data[i];
+                log.debug("extension Archivo", extensionFile);
+                if(extensionFile === 'csv'){
+                    data = line.value.split(",");
+                    for(i in data){
+                        json[i] = data[i];
+                    }
+                    rutCliente = json[5];
+                    nBoleta = json[4];
+                } else if(extensionFile === 'txt'){
+                    data = line.value;
+                    log.debug("data en read Payroll File", data);
+                    var folio = "";
+                    var rut = "";
+                    for(var i = 0; i <= data.length; i++){
+                        if(i >= 26 && i <= 35){
+                            folio += data[i];
+                        }
+                        if(i >= 36 && i <= 47){
+                            rut += data[i];
+                        }
+                    }
+                    var rutSinDv = Number(rut.substring(0,rut.length-1));
+                    var dv = rut.slice(-1);
+                    rutCliente = rutSinDv + '-' + dv;                        
+                    nBoleta = Number(folio);
                 }
+                
                 try{
-                    log.debug("json", json)
-                    var rut = json[5];
-                    var nBoleta = json[4];
-                    var resultSearch = nominas.searchAmount(rut, nBoleta);
+                    var resultSearch = nominas.searchAmount(rutCliente, nBoleta);
                     log.debug("resultSearch",resultSearch);
-
+                    
                     // Transformación de registro invoice a customer_payment
                     var factura2Pago = record.transform({
                         fromType: record.Type.INVOICE,
@@ -53,8 +75,6 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                         ignoreMandatoryFields: true
                     });
                     var pago_realizado = factura2Pago.save();
-                    log.debug("transform", pago_realizado);
-
                     var objRecord = record.load({
                         type: record.Type.CUSTOMER_PAYMENT,
                         id: pago_realizado,
@@ -65,8 +85,6 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                         isDynamic: true,
                         ignoreMandatoryFields: true
                     });
-                    
-                    log.debug("Actualización registro pago", idRecordPago);
                     payments.push(idRecordPago);
                 } catch(e){
                     error = {"error" : e.message}
