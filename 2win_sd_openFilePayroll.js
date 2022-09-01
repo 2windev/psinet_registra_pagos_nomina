@@ -13,6 +13,7 @@
         var internalIdFile = "";
         var nameFile = "";
         var typeFile = "";
+        var extensionFile = "";
         var resultExistsPayroll = "";
         var date = format.parse({
             value: new Date(),
@@ -20,13 +21,14 @@
         });
         resultSearchFile.map(function(key){
             typeFile = key.name.split('_')[0].toUpperCase();
+            extensionFile = key.name.split('.')[1];
             if(typeFile === filePacPat){
                 log.debug("resultado Archivo Pat Pac", key);
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile);
                 if(resultExistsPayroll == false){
-                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date);
+                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 }else {
                     log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente")
                 }
@@ -36,7 +38,7 @@
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
-                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date);
+                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 }else {
                     log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente")
                 }
@@ -46,7 +48,7 @@
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
-                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date);
+                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 } else {
                     log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente")
                 }
@@ -54,20 +56,17 @@
         });  
     }
 
-    function procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date){
+    function procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile){
         var datosNomina={
             name_file: nameFile,
             type_file: typeFile,
             date_time: date
         }
-
-        log.debug("Datos Nomina", datosNomina);
+        log.debug("JSON datosNomina", datosNomina);
 
         var idRecordPayroll = procesar.registerPayroll(datosNomina);
-        log.debug("id registro tabla registro nómina", idRecordPayroll);
-
-        log.debug("internal Id File", internalIdFile)
-        var resultRecordPayments = procesar.readPayrollFile(internalIdFile);
+        log.debug("id registro tabla Personalizada", idRecordPayroll);
+        var resultRecordPayments = procesar.readPayrollFile(internalIdFile, extensionFile);
         log.debug("Resultado registro de pagos", resultRecordPayments);
         if(resultRecordPayments[0].hasOwnProperty("error")){
             log.debug("Error al registrar pago", "se envía email a diego.munoz@2win.cl"); // runtime.getCurrentUser().email
