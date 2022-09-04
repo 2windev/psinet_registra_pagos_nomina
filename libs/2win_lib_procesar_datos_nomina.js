@@ -63,7 +63,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                 }
                 
                 try{
-                    var resultSearch = nominas.searchAmount(rutCliente, nBoleta);
+                    var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta);
                     log.debug("resultSearch",resultSearch);
                     
                     // Transformación de registro invoice a customer_payment
