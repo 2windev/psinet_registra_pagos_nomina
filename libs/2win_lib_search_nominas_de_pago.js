@@ -5,6 +5,11 @@
  **/
 define(['N/search'], 
     function(search){
+        /**
+         * @desc Búsqueda para válidar si nómina de pago ya fue procesada con anterioridad, si existe devolvera el internal id, si no, devolvera false.
+         * @function searchFilePayroll
+         * @return Array getDataSearch()
+         */
         function searchPayroll(nameFile){
             var structureSearchPayroll = {
                 type: "customrecord_2win_archivos_pago_proces",
@@ -12,12 +17,16 @@ define(['N/search'],
                     ['name', 'is', nameFile]
                 ],
                 columns: [
-                    search.createColumn({ name: "name", label: "name" })
+                    search.createColumn({ name: "internalid", label: "internal_id" })
                 ]
             }
             return getDataSearch(structureSearchPayroll);
         }
-
+        /**
+         * @desc devuelve el internal_id de un cliente especifico, determinado por el rut.
+         * @function searchCustomer
+         * @return String internal_id
+         */
         function searchCustomer(rut){
             var structureSearchCustomer = {
                 type: search.Type.CUSTOMER,
@@ -33,9 +42,14 @@ define(['N/search'],
             return idCustomer[0].internal_id;
         }
 
-        function searchAmount(rut, nBoleta){
+        /**
+         * @desc devuelve los pagos pendiente de un cliente especifico, determinado por su rut.
+         * @function searchCustomerDebt
+         * @return getDataSearch(structureCustomerDebt)
+         */
+        function searchCustomerDebt(rut, nBoleta){
             try{
-                var structureSearchAmount = {
+                var structureCustomerDebt = {
                     type: search.Type.TRANSACTION,
                     filters:
                     [
@@ -60,9 +74,9 @@ define(['N/search'],
                         search.createColumn({name: "grossamount", label: "gross_amount"})
                     ]
                 }
-                return getDataSearch(structureSearchAmount);
+                return getDataSearch(structureCustomerDebt);
             } catch (e){
-                log.debug("error - searchAmount", e.message)
+                log.debug("error - structureCustomerDebt", e.message)
             }
         }
 
@@ -118,7 +132,7 @@ define(['N/search'],
     return {
         searchPayroll : searchPayroll,
         searchCustomer : searchCustomer,
-        searchAmount : searchAmount,
+        searchCustomerDebt : searchCustomerDebt,
         searchFilePayroll : searchFilePayroll
     }
 });
