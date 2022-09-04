@@ -27,10 +27,16 @@
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile);
-                if(resultExistsPayroll == false){
+                if(resultExistsPayroll === false){
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 }else {
-                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente")
+                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
+                    email.send({
+                        author: 46126, //runtime.getCurrentUser().id
+                        recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
+                        subject: 'Registrar Pagos',
+                        body: 'Archivo de Nómina procesado anteriormente'
+                    });
                 }
             } else if(typeFile === fileCajaVecina){
                 log.debug("resultado Archivo Caja Vecina", key);
@@ -40,7 +46,13 @@
                 if(resultExistsPayroll == false){
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 }else {
-                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente")
+                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
+                    email.send({
+                        author: 46126, //runtime.getCurrentUser().id
+                        recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
+                        subject: 'Registrar Pagos',
+                        body: 'Archivo de Nómina procesado anteriormente'
+                    });
                 }
             } else if(typeFile === fileServipag){
                 log.debug("resultado Archivo Servipag", key);
@@ -50,7 +62,13 @@
                 if(resultExistsPayroll == false){
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 } else {
-                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente")
+                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
+                    email.send({
+                        author: 46126, //runtime.getCurrentUser().id
+                        recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
+                        subject: 'Registrar Pagos',
+                        body: 'Archivo de Nómina procesado anteriormente'
+                    });
                 }
             }
         });  
