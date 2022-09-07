@@ -86,12 +86,14 @@ define(['N/search'],
          * @return Array getDataSearch()
          */
         function searchFilePayroll(){
-            //TODO Se deberá implementar filtro para obtener archivos de nóminas especificos, ya sean estos, determinados por nombre o por fecha.
+            //TODO mejorar filtro por fecha.
             try{
                 var objSearch = {
                     type: 'file',
                     filters: [
                         ['folder', 'anyof', '3824'],
+                        'AND',
+                        ['created', 'within', 'lastweek']
                     ],
                     columns: [
                         search.createColumn({ name: 'internalid', label: 'internal_id' }),
