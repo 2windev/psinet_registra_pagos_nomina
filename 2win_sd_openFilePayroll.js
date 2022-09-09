@@ -85,7 +85,6 @@
         var idRecordPayroll = procesar.registerPayroll(datosNomina);
         log.debug("id registro tabla Personalizada", idRecordPayroll);
         var resultRecordPayments = procesar.readPayrollFile(internalIdFile, extensionFile);
-        log.debug("Resultado registro de pagos", resultRecordPayments);
         if(resultRecordPayments[0].hasOwnProperty("error")){
             log.debug("Error al registrar pago", "se envía email a diego.munoz@2win.cl"); // runtime.getCurrentUser().email
             email.send({
@@ -100,7 +99,7 @@
                 author: 46126, //runtime.getCurrentUser().id
                 recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
                 subject: 'Registrar Pagos',
-                body: 'Registros de pagos completados satisfactoriamente, ID registro de pago: ' + resultRecordPayments[0]
+                body: 'Registro de pago completado satisfactoriamente, ID registro de pago: ' + resultRecordPayments[0]
             });
         }
     }
