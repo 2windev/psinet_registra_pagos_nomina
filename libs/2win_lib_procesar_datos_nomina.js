@@ -6,6 +6,11 @@
 define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js'], 
     function(file, record, nominas, format, params) {
 
+        /**
+         * @desc Devuelve el id del registro de nómina grabada en la tabla personalizada.
+         * @function registerPayroll
+         * @return Integer idRecord
+         */
         function registerPayroll(datosNomina){
             var objRecord  = record.create({
                 type: "customrecord_2win_archivos_pago_proces",
@@ -64,12 +69,17 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                 
                 try{
                     var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta);
-                    log.debug("resultSearch",resultSearch);
-                    
+                    var internalIdDeuda = resultSearch[0].internal_id;
+                    if(internalIdDeuda === false){
+                        var message = "no existe deuda asociada a cliente.";
+                        error = {"error" : message}
+                        payments.push(error);
+                        return message;
+                    }
                     // Transformación de registro invoice a customer_payment
                     var factura2Pago = record.transform({
                         fromType: record.Type.INVOICE,
-                        fromId: resultSearch[0].internal_id,
+                        fromId: internalIdDeuda,
                         toType: record.Type.CUSTOMER_PAYMENT,
                         isDynamic: true,
                         ignoreMandatoryFields: true
