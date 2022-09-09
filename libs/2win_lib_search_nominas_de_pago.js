@@ -93,7 +93,9 @@ define(['N/search'],
                     filters: [
                         ['folder', 'anyof', '3824'],
                         'AND',
-                        ['created', 'within', 'lastweek']
+                        ['created', 'within', 'lastweek'],
+                        'AND',
+                        ['filetype', 'anyof', 'PLAINTEXT'],
                     ],
                     columns: [
                         search.createColumn({ name: 'internalid', label: 'internal_id' }),
