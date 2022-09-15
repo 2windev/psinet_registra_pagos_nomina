@@ -27,48 +27,109 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             return idRecord;
         }
 
-        function readPayrollFile(internalIdFile, extensionFile){
+        function readPayrollFile(internalIdFile, typeFile){
             var payrollFile = file.load({
                 id: internalIdFile
             });
+            log.debug("payrollFile - file", payrollFile);
             var data = [];
             var json = {};
             var payments = [];
-            var error = {};
             var rutCliente = 0;
             var nBoleta = 0;
             var iterator = payrollFile.lines.iterator();
-            iterator.each(function (){ return false; }) // Para saltar la primera línea.
-            iterator.each(function (line) {
-                log.debug("extension Archivo", extensionFile);
-                if(extensionFile === 'csv'){
-                    data = line.value.split(",");
-                    for(i in data){
-                        json[i] = data[i];
-                    }
-                    rutCliente = json[5];
-                    nBoleta = json[4];
-                } else if(extensionFile === 'txt'){
-                    data = line.value;
-                    log.debug("data en read Payroll File", data);
-                    var folio = "";
-                    var rut = "";
-                    for(var i = 0; i <= data.length; i++){
-                        if(i >= 26 && i <= 35){
-                            folio += data[i];
+            if(typeFile === 'PATPAC'){
+                iterator.each(function (){ return false; }) // Para saltar la primera línea.
+            }
+            log.debug("size archivo", payrollFile.size)
+            if(payrollFile.size <= 10000000){
+                iterator.each(function(line) {
+                    log.debug("tipo de Archivo", typeFile);
+                    if(typeFile === 'PATPAC'){
+                        data = line.value.split(",");
+                        for(i in data){
+                            json[i] = data[i];
                         }
-                        if(i >= 36 && i <= 47){
-                            rut += data[i];
+                        rutCliente = json[5];
+                        nBoleta = json[4];
+                        payments.push(registerPayments(rutCliente, nBoleta));
+    
+                    } else if(typeFile === 'SERVIPAG'){
+                        data = line.value;
+                        log.debug("data en read Payroll File", data);
+                        var folio = "";
+                        var rut = "";
+                        for(var i = 0; i <= data.length; i++){
+                            if(i >= 26 && i <= 35){
+                                folio += data[i];
+                            }
+                            if(i >= 36 && i <= 47){
+                                rut += data[i];
+                            }
                         }
-                    }
-                    var rutSinDv = Number(rut.substring(0,rut.length-1));
-                    var dv = rut.slice(-1);
-                    rutCliente = rutSinDv + '-' + dv;                        
-                    nBoleta = Number(folio);
-                }
-                
+                        var rutSinDv = Number(rut.substring(0,rut.length-1));
+                        var dv = rut.slice(-1);
+                        rutCliente = rutSinDv + '-' + dv;                        
+                        nBoleta = Number(folio);
+                        payments.push(registerPayments(rutCliente, nBoleta));
+    
+                    } else if(typeFile === 'CAJAVECINA'){
+                        data = line.value;
+                        log.debug("data en read Payroll File", data);
+                        var monto = "";
+                        var rut = "";
+                        for(var i = 0; i <= data.length; i++){
+                            if(i >= 0 && i <= 14){
+                                rut += data[i];
+                            }
+                            if(i >= 156 && i <= 171){
+                                monto += data[i];
+                            }
+                        }
+                        var rutSinDv = Number(rut.substring(0,rut.length-1));
+                        var dv = rut.slice(-1);
+                        rutCliente = rutSinDv + '-' + dv;                        
+                        nBoleta = Number(monto);
+                        log.debug("rut cliente - cajavecina", rutCliente);
+                        log.debug("monto - cajavecina", nBoleta);
+                        var idRecordDeposit = registerDepositApplicated(rutCliente, nBoleta);
+                        log.debug("idRecordDeposit", idRecordDeposit)
+                        var rcdDepositApplication = record.transform({	
+                            fromType: record.Type.CUSTOMER_DEPOSIT,
+                            fromId: idRecordDeposit,
+                            toType: record.Type.DEPOSIT_APPLICATION,
+                            isDynamic: true 
+                        });
+                        var nbrLines = rcdDepositApplication.getLineCount({ sublistId: 'apply' });
+                        log.debug("nbLines", nbrLines);
+                        for(var i = 0; i < nbrLines; i++){
+                            rcdDepositApplication.selectLine({ sublistId:'apply', line: i });
+                            rcdDepositApplication.setCurrentSublistValue({ sublistId:'apply', fieldId:'apply', value: true, ignoreFieldChange: false});
+                        }
+                        rcdDepositApplication.commitLine({
+                            sublistId: 'apply'
+                        });
+                        var idDepositApp = rcdDepositApplication.save();
+                        log.debug("idDepositApp", idDepositApp);
+                        var resultSearchDepositApp = nominas.searchDepositApplication(idRecordDeposit);
+                        log.debug("resultSearchDepositApp", resultSearchDepositApp)
+                        var internalIdDeposit = resultSearchDepositApp[0].internal_id;
+                        log.debug("internal id deposit Applicated", internalIdDeposit);
+                    }                    
+                });
+            } else {
+                var error = {};
+                error = {"error" : "Archivo pesa más de 10mb"};
+                payments.push(error);
+            }
+            
+            return payments;
+        }
+
+        function registerPayments(rutCliente, nBoleta){
+            var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta);
+            var error = {};
                 try{
-                    var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta);
                     var internalIdDeuda = resultSearch[0].internal_id;
                     if(internalIdDeuda === false){
                         var message = "no existe deuda asociada a cliente.";
@@ -95,15 +156,32 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                         isDynamic: true,
                         ignoreMandatoryFields: true
                     });
-                    payments.push(idRecordPago);
+                    return idRecordPago;
                 } catch(e){
-                    error = {"error" : e.message}
-                    payments.push(error);
+                    error = {"error" : e.message};
+                    return error;
                 }
-                return true;
-            });
-            return payments;
         }
+
+        function registerDepositApplicated(rutCliente, amount){
+            var internalIdCustomer = nominas.searchCustomer(rutCliente);
+            // TODO crear transacción de tipo "Deposito de cliente"
+            var objRecordDeposit = record.create({
+                type: "customerdeposit",
+                isDynamic: true
+            });
+            log.debug("objRecordDeposit", objRecordDeposit);
+            objRecordDeposit.setValue({ fieldId: 'customer', value: internalIdCustomer });
+            objRecordDeposit.setValue({ fieldId: 'payment', value: amount });
+            objRecordDeposit.setValue({ fieldId: 'subsidiary', value: 5 });
+
+            var idRecordDeposit = objRecordDeposit.save({
+                enableSourcing: true,
+                ignoreMandatoryFields: true
+            });
+            return idRecordDeposit;
+        }
+
         return {
             readPayrollFile : readPayrollFile,
             registerPayroll : registerPayroll
