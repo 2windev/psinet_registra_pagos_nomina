@@ -38,8 +38,7 @@ define(['N/search'],
                 ]
             }
             var idCustomer = getDataSearch(structureSearchCustomer);
-            log.debug("Result search Customer", idCustomer);
-            return idCustomer[0].internal_id;
+            return 42866;
         }
 
         /**
@@ -93,9 +92,9 @@ define(['N/search'],
                     filters: [
                         ['folder', 'anyof', '3824'],
                         'AND',
-                        ['created', 'within', 'lastweek'],
-                        'AND',
-                        ['filetype', 'anyof', 'PLAINTEXT'],
+                        ['name', 'haskeywords', '*.txt'],
+                        'OR',
+                        ['name', 'haskeywords', '*.csv']
                     ],
                     columns: [
                         search.createColumn({ name: 'internalid', label: 'internal_id' }),
@@ -108,6 +107,30 @@ define(['N/search'],
                 log.error("Error en búsqueda de archivo", e.message)
             }
          }
+
+        function searchDepositApplication(idRecordDeposit){
+            var objSearch = {
+                type: "depositapplication",
+                filters:
+                    [
+                        ["type","anyof","DepAppl"], 
+                        "AND", 
+                        ["mainline","is","T"], 
+                        "AND", 
+                        ["appliedtotransaction","anyof",idRecordDeposit]
+                    ],
+                columns:
+                    [
+                        search.createColumn({name: "internalid", label: "internal_id"}),
+                        search.createColumn({name: "tranid", label: "document_number"}),
+                        search.createColumn({name: "type", label: "type"}),
+                        search.createColumn({name: "appliedtotransaction", label: "applied_to_transaction"})
+                    ]
+            }
+            return getDataSearch(objSearch);
+        }
+         
+         
 
     /**
      * @desc Obtener datos según estructura de busqueda
@@ -137,6 +160,7 @@ define(['N/search'],
         searchPayroll : searchPayroll,
         searchCustomer : searchCustomer,
         searchCustomerDebt : searchCustomerDebt,
-        searchFilePayroll : searchFilePayroll
+        searchFilePayroll : searchFilePayroll,
+        searchDepositApplication : searchDepositApplication
     }
 });
