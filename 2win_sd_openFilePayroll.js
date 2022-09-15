@@ -7,6 +7,7 @@
      function execute(context) {
 
         var resultSearchFile = nominas.searchFilePayroll();
+        // log.debug("resultSearchFile",resultSearchFile)
         var filePacPat = 'PATPAC';
         var fileCajaVecina = 'CAJAVECINA';
         var fileServipag = 'SERVIPAG';
@@ -44,6 +45,7 @@
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
+                    log.debug("datos nomina - SD ", internalIdFile + ' ' + nameFile + ' ' + typeFile + ' ' + date + ' ' + extensionFile)
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
                 }else {
                     log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
@@ -84,7 +86,9 @@
 
         var idRecordPayroll = procesar.registerPayroll(datosNomina);
         log.debug("id registro tabla Personalizada", idRecordPayroll);
-        var resultRecordPayments = procesar.readPayrollFile(internalIdFile, extensionFile);
+        log.debug("internalIdFile - extensionFile", internalIdFile + " " + extensionFile)
+        var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile);
+        log.debug("resultRecordPayments", resultRecordPayments);
         if(resultRecordPayments[0].hasOwnProperty("error")){
             log.debug("Error al registrar pago", "se envía email a diego.munoz@2win.cl"); // runtime.getCurrentUser().email
             email.send({
@@ -104,7 +108,6 @@
         }
     }
 
-     
      return {
          execute: execute
      };
