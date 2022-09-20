@@ -3,8 +3,8 @@
  * @module ./2win_lib_procesar_datos_nomina.js
  * @NModuleScope Public
  **/
-define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js'], 
-    function(file, record, nominas, format, params) {
+define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format', './2WinUtilityStaticParams.js', 'N/xml'], 
+    function(file, record, nominas, format, params, xml) {
 
         /**
          * @desc Devuelve el id del registro de nómina grabada en la tabla personalizada.
@@ -27,6 +27,11 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             return idRecord;
         }
 
+        /**
+         * @desc lee el contenido de las nóminas y realiza la trasacción de acuerdo al tipo de nómina.
+         * @function readPayrollFile
+         * @return array payments
+         */
         function readPayrollFile(internalIdFile, typeFile){
             var payrollFile = file.load({
                 id: internalIdFile
@@ -42,7 +47,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                 iterator.each(function (){ return false; }) // Para saltar la primera línea.
             }
             log.debug("size archivo", payrollFile.size)
-            if(payrollFile.size <= 10000000){
+            if(payrollFile.size <= 10000000){  // Tamaño de archivo en byte debe ser menor a 10mb.
                 iterator.each(function(line) {
                     log.debug("tipo de Archivo", typeFile);
                     if(typeFile === 'PATPAC'){
@@ -94,27 +99,26 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                         log.debug("monto - cajavecina", nBoleta);
                         var idRecordDeposit = registerDepositApplicated(rutCliente, nBoleta);
                         log.debug("idRecordDeposit", idRecordDeposit)
-                        var rcdDepositApplication = record.transform({	
+                        var recordDepositApplication = record.transform({	
                             fromType: record.Type.CUSTOMER_DEPOSIT,
                             fromId: idRecordDeposit,
                             toType: record.Type.DEPOSIT_APPLICATION,
                             isDynamic: true 
                         });
-                        var nbrLines = rcdDepositApplication.getLineCount({ sublistId: 'apply' });
-                        log.debug("nbLines", nbrLines);
-                        for(var i = 0; i < nbrLines; i++){
-                            rcdDepositApplication.selectLine({ sublistId:'apply', line: i });
-                            rcdDepositApplication.setCurrentSublistValue({ sublistId:'apply', fieldId:'apply', value: true, ignoreFieldChange: false});
-                        }
-                        rcdDepositApplication.commitLine({
-                            sublistId: 'apply'
-                        });
-                        var idDepositApp = rcdDepositApplication.save();
+                        var lines = recordDepositApplication.getLineCount({ sublistId: 'apply' });
+                        for(var i = 0; i < lines; i++){
+                            recordDepositApplication.selectLine({ sublistId:'apply', line: i });
+                            recordDepositApplication.setCurrentSublistValue({ 
+                                sublistId:'apply', 
+                                fieldId:'apply', 
+                                value: true, 
+                                ignoreFieldChange: false 
+                            });
+                        };
+                        recordDepositApplication.commitLine({ sublistId: 'apply' });
+                        var idDepositApp = recordDepositApplication.save();
                         log.debug("idDepositApp", idDepositApp);
-                        var resultSearchDepositApp = nominas.searchDepositApplication(idRecordDeposit);
-                        log.debug("resultSearchDepositApp", resultSearchDepositApp)
-                        var internalIdDeposit = resultSearchDepositApp[0].internal_id;
-                        log.debug("internal id deposit Applicated", internalIdDeposit);
+                        payments.push(idDepositApp);
                     }                    
                 });
             } else {
@@ -126,6 +130,11 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             return payments;
         }
 
+        /**
+         * @desc se crea registro de tipo pago en tabla de transacción para nóminas de tipo pat-pac y servipag.
+         * @function registerPayments
+         * @return Integer idRecordPago
+         */
         function registerPayments(rutCliente, nBoleta){
             var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta);
             var error = {};
@@ -163,6 +172,11 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
                 }
         }
 
+        /**
+         * @desc se crea registro de tipo aplicación de desposito en tabla de transacción para nóminas de tipo caja vecina.
+         * @function registerDepositApplicated
+         * @return Integer idRecordDeposit
+         */
         function registerDepositApplicated(rutCliente, amount){
             var internalIdCustomer = nominas.searchCustomer(rutCliente);
             // TODO crear transacción de tipo "Deposito de cliente"
