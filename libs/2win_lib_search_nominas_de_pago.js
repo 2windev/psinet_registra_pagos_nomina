@@ -108,30 +108,6 @@ define(['N/search'],
             }
          }
 
-        function searchDepositApplication(idRecordDeposit){
-            var objSearch = {
-                type: "depositapplication",
-                filters:
-                    [
-                        ["type","anyof","DepAppl"], 
-                        "AND", 
-                        ["mainline","is","T"], 
-                        "AND", 
-                        ["appliedtotransaction","anyof",idRecordDeposit]
-                    ],
-                columns:
-                    [
-                        search.createColumn({name: "internalid", label: "internal_id"}),
-                        search.createColumn({name: "tranid", label: "document_number"}),
-                        search.createColumn({name: "type", label: "type"}),
-                        search.createColumn({name: "appliedtotransaction", label: "applied_to_transaction"})
-                    ]
-            }
-            return getDataSearch(objSearch);
-        }
-         
-         
-
     /**
      * @desc Obtener datos según estructura de busqueda
      * @function getDataSearch
@@ -160,7 +136,6 @@ define(['N/search'],
         searchPayroll : searchPayroll,
         searchCustomer : searchCustomer,
         searchCustomerDebt : searchCustomerDebt,
-        searchFilePayroll : searchFilePayroll,
-        searchDepositApplication : searchDepositApplication
+        searchFilePayroll : searchFilePayroll
     }
 });
