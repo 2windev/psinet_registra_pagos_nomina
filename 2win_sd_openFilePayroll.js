@@ -103,7 +103,7 @@
                 author: 46126, //runtime.getCurrentUser().id
                 recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
                 subject: 'Registrar Pagos',
-                body: 'Registro de pago completado satisfactoriamente, ID registro de pago: ' + resultRecordPayments[0]
+                body: 'Registro de pago completado satisfactoriamente, ID registro de pago: ' + resultRecordPayments
             });
         }
     }
