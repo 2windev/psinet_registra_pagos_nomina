@@ -8,7 +8,7 @@
 
         var resultSearchFile = nominas.searchFilePayroll();
         // log.debug("resultSearchFile",resultSearchFile)
-        var filePacPat = 'PATPAC';
+        var filePatPac = 'PATPAC';
         var fileCajaVecina = 'CAJAVECINA';
         var fileServipag = 'SERVIPAG';
         var internalIdFile = "";
@@ -23,7 +23,7 @@
         resultSearchFile.map(function(key){
             typeFile = key.name.split('_')[0].toUpperCase();
             extensionFile = key.name.split('.')[1];
-            if(typeFile === filePacPat){
+            if(typeFile === filePatPac){
                 log.debug("resultado Archivo Pat Pac", key);
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
