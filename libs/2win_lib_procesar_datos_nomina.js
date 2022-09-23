@@ -43,11 +43,11 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
             var rutCliente = 0;
             var nBoleta = 0;
             var iterator = payrollFile.lines.iterator();
-            if(typeFile === 'PATPAC'){
-                iterator.each(function (){ return false; }) // Para saltar la primera línea.
-            }
             log.debug("size archivo", payrollFile.size)
-            if(payrollFile.size <= 10000000){  // Tamaño de archivo en byte debe ser menor a 10mb.
+            if(payrollFile.size < 10485760){  // Tamaño de archivo en byte debe ser menor a 10mb.
+                if(typeFile === 'PATPAC'){
+                    iterator.each(function (){ return false; }) // Para saltar la primera línea.
+                }
                 iterator.each(function(line) {
                     log.debug("tipo de Archivo", typeFile);
                     if(typeFile === 'PATPAC'){
@@ -179,12 +179,11 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
          */
         function registerDepositApplicated(rutCliente, amount){
             var internalIdCustomer = nominas.searchCustomer(rutCliente);
-            // TODO crear transacción de tipo "Deposito de cliente"
             var objRecordDeposit = record.create({
                 type: "customerdeposit",
                 isDynamic: true
             });
-            log.debug("objRecordDeposit", objRecordDeposit);
+            // log.debug("objRecordDeposit", objRecordDeposit);
             objRecordDeposit.setValue({ fieldId: 'customer', value: internalIdCustomer });
             objRecordDeposit.setValue({ fieldId: 'payment', value: amount });
             objRecordDeposit.setValue({ fieldId: 'subsidiary', value: 5 });
