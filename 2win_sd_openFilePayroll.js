@@ -7,7 +7,6 @@
      function execute(context) {
 
         var resultSearchFile = nominas.searchFilePayroll();
-        // log.debug("resultSearchFile",resultSearchFile)
         var filePatPac = 'PATPAC';
         var fileCajaVecina = 'CAJAVECINA';
         var fileServipag = 'SERVIPAG';
@@ -24,54 +23,29 @@
             typeFile = key.name.split('_')[0].toUpperCase();
             extensionFile = key.name.split('.')[1];
             if(typeFile === filePatPac){
-                log.debug("resultado Archivo Pat Pac", key);
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile);
                 if(resultExistsPayroll === false){
+                    log.debug("resultado Archivo Pat Pac", key);
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
-                }else {
-                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
-                    email.send({
-                        author: 46126, //runtime.getCurrentUser().id
-                        recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
-                        subject: 'Registrar Pagos',
-                        body: 'Archivo de Nómina procesado anteriormente'
-                    });
                 }
             } else if(typeFile === fileCajaVecina){
-                log.debug("resultado Archivo Caja Vecina", key);
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
-                    log.debug("datos nomina - SD ", internalIdFile + ' ' + nameFile + ' ' + typeFile + ' ' + date + ' ' + extensionFile)
+                    log.debug("resultado Archivo Caja Vecina", key);
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
-                }else {
-                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
-                    email.send({
-                        author: 46126, //runtime.getCurrentUser().id
-                        recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
-                        subject: 'Registrar Pagos',
-                        body: 'Archivo de Nómina procesado anteriormente'
-                    });
                 }
             } else if(typeFile === fileServipag){
-                log.debug("resultado Archivo Servipag", key);
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
+                    log.debug("resultado Archivo Servipag", key);
                     procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
-                } else {
-                    log.debug("Error al intentar procesar Nómina", "Archivo de Nómina ya fue procesado anteriormente");
-                    email.send({
-                        author: 46126, //runtime.getCurrentUser().id
-                        recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
-                        subject: 'Registrar Pagos',
-                        body: 'Archivo de Nómina procesado anteriormente'
-                    });
-                }
+                } 
             }
         });  
     }
@@ -88,7 +62,6 @@
         log.debug("id registro tabla Personalizada", idRecordPayroll);
         log.debug("internalIdFile - extensionFile", internalIdFile + " " + extensionFile)
         var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile);
-        log.debug("resultRecordPayments", resultRecordPayments);
         if(resultRecordPayments[0].hasOwnProperty("error")){
             log.debug("Error al registrar pago", "se envía email a diego.munoz@2win.cl"); // runtime.getCurrentUser().email
             email.send({
@@ -98,7 +71,6 @@
                 body: 'Se ha identificado el siguiente Error al registrar los pagos de la nómina id: ' + internalIdFile + '\n' + resultRecordPayments[0].error
             });
         } else {
-            log.debug("id registros de pagos", resultRecordPayments);
             email.send({
                 author: 46126, //runtime.getCurrentUser().id
                 recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
