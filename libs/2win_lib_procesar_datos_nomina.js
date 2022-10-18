@@ -197,7 +197,8 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', 'N/format'
 
         return {
             readPayrollFile : readPayrollFile,
-            registerPayroll : registerPayroll
+            registerPayroll : registerPayroll,
+            registerPayments : registerPayments
         };
     
 });
