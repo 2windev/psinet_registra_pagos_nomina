@@ -38,7 +38,7 @@ define(['N/search'],
                 ]
             }
             var idCustomer = getDataSearch(structureSearchCustomer);
-            return 42866;
+            return idCustomer; //42866
         }
 
         /**
@@ -50,20 +50,20 @@ define(['N/search'],
             try{
                 var structureCustomerDebt = {
                     type: search.Type.TRANSACTION,
-                    filters:
-                    [
-                        ["type","anyof","VendBill","CustInvc"],
-                        "AND",
-                        ["subsidiary","anyof",5],
-                        "AND",
-                        ["custbody_2winrutapipos","is",rut],
-                        "AND",
-                        ["status","anyof","CustInvc:A"],
-                        "AND",
-                        ["mainline","is","T"],
-                        "AND", 
-                        ["custbody_2winfolioacepta","equalto",nBoleta]
-                    ],
+                    filters: 
+                        [
+                            ["type","anyof","VendBill","CustInvc"],
+                            "AND",
+                            ["subsidiary","anyof",5],
+                            "AND",
+                            ["custbody_2winrutapipos","is",rut],
+                            "AND",
+                            ["status","anyof","CustInvc:A"],
+                            "AND",
+                            ["mainline","is","T"],
+                            "AND", 
+                            ["custbody_2winfolioacepta","equalto",nBoleta]
+                        ],
                     columns:
                     [
                         search.createColumn({name: "internalid", label: "internal_id"}),
