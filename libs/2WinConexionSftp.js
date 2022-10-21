@@ -11,8 +11,10 @@ define(['N/sftp', './2WinArchivo-v2.0'],
     function(sftp, archivo) {
 
         const setConnection = function(paramConnect) {
+
             try {
-                log.audit({
+
+                log.debug({
                     title: 'setConnection - paramConnect',
                     details: paramConnect
                 });
@@ -20,23 +22,18 @@ define(['N/sftp', './2WinArchivo-v2.0'],
                 var connectSftp = sftp.createConnection(paramConnect);
 
             } catch (e) {
-                log.error({
-                    title: 'setConnection - Error de Coneccion',
-                    details: e
-                });
-                return null;
+                log.error({ title: 'setConnection - Error de Coneccion', details: e });
+                throw e;
             }
 
-            log.debug({
-                title: 'setConnection',
-                details: 'Connection Success..!!'
-            });
+            log.debug({ title: 'setConnection', details: 'Connection Success..!!' });
 
             return connectSftp;
         }
 
         const uploadFileSftp = function(idFileUp, directoryUp, connectSftp) {
             try {
+
                 var fileObject = archivo.getFileObject(idFileUp)
 
                 var paramUpload = {
@@ -47,24 +44,21 @@ define(['N/sftp', './2WinArchivo-v2.0'],
                 }
 
                 connectSftp.upload(paramUpload);
+
             } catch (e) {
-                log.audit({
-                    title: 'uploadFileSftp - Excepcion',
-                    details: e
-                });
-                return null;
+                log.error({ title: 'uploadFileSftp - Excepcion', details: e });
+                throw e;
             }
 
-            log.debug({
-                title: 'uploadFileSftp',
-                details: 'Upload Success..!! (File Name: ' + fileObject.name + ')'
-            });
+            log.debug({ title: 'uploadFileSftp', details: 'Upload Success..!! (File Name: ' + fileObject.name + ')' });
         }
 
         const dowloadFileSftp = function(nombreArchivoDown, directoryDonw, nameFolderSave, connectSftp) {
+            
             try {
+
                 var idFolder = archivo.getFolderIdByName(nameFolderSave);
-                log.audit({ title: 'idfolder', details: idFolder });
+                log.debug({ title: 'idfolder - sftp', details: idFolder });
                 
                 var downloadedFile = connectSftp.download({
                     directory: directoryDonw,
@@ -76,11 +70,8 @@ define(['N/sftp', './2WinArchivo-v2.0'],
                 return downloadedFile.save();
 
             } catch (e) {
-                log.debug({
-                    title: 'dowloadFileSftp - Error',
-                    details: e
-                });
-                return null
+                log.error({ title: 'dowloadFileSftp - Error', details: e });
+                throw e;
             }
         }
 
