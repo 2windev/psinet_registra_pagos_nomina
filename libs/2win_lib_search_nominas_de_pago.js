@@ -28,17 +28,23 @@ define(['N/search'],
          * @return String internal_id
          */
         function searchCustomer(rut){
-            var structureSearchCustomer = {
-                type: search.Type.CUSTOMER,
-                filters: [
-                  ['custentity_2win_rut', 'is', rut]
-                ],
-                columns: [
-                    search.createColumn({ name: 'internalid', label: 'internal_id' })
-                ]
+            try{
+                var structureSearchCustomer = {
+                    type: "customer",
+                    filters: [
+                      ['custentity_2wrut', 'is', rut]
+                    ],
+                    columns: [
+                        search.createColumn({ name: 'internalid', label: 'internal_id' })
+                    ]
+                }
+                var idCustomer = getDataSearch(structureSearchCustomer);
+                log.debug("idCustomer", idCustomer);
+                return idCustomer
+            } catch(e){
+                log.debug("Error searchCustomer", e.message);
             }
-            var idCustomer = getDataSearch(structureSearchCustomer);
-            return idCustomer; //42866
+            
         }
 
         /**
@@ -56,7 +62,7 @@ define(['N/search'],
                             "AND",
                             ["subsidiary","anyof",5],
                             "AND",
-                            ["custbody_2winrutapipos","is",rut],
+                            ["customermain.custentity_2wrut","is",rut],
                             "AND",
                             ["status","anyof","CustInvc:A"],
                             "AND",
@@ -90,7 +96,7 @@ define(['N/search'],
                 var objSearch = {
                     type: 'file',
                     filters: [
-                        ['folder', 'anyof', '3824'],
+                        ['folder', 'is', '389'], // id folder 2win: 3824
                         'AND',
                         ['name', 'haskeywords', '*.txt'],
                         'OR',
@@ -104,7 +110,7 @@ define(['N/search'],
                 }
                 return getDataSearch(objSearch);
             } catch(e){
-                log.error("Error en búsqueda de archivo", e.message)
+                log.debug("Error en búsqueda de archivo", e.message)
             }
          }
 
