@@ -7,6 +7,7 @@
      function execute(context) {
 
         var resultSearchFile = nominas.searchFilePayroll();
+        // log.debug("nóminas en directorio archivos_nominas", resultSearchFile);
         var filePatPac = 'PATPAC';
         var fileCajaVecina = 'CAJAVECINA';
         var fileServipag = 'SERVIPAG';
@@ -60,23 +61,28 @@
 
         var idRecordPayroll = procesar.registerPayroll(datosNomina);
         log.debug("id registro tabla Personalizada", idRecordPayroll);
-        log.debug("internalIdFile - extensionFile", internalIdFile + " " + extensionFile)
         var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile);
+        log.debug("resultado registro de pago", resultRecordPayments)
+
+        //TODO implementaciónde envío de email y mejora al manejo de errores en 2 etapa.
         if(resultRecordPayments[0].hasOwnProperty("error")){
-            log.debug("Error al registrar pago", "se envía email a diego.munoz@2win.cl"); // runtime.getCurrentUser().email
-            email.send({
-                author: 46126, //runtime.getCurrentUser().id
-                recipients: 'diego.munoz@2win.cl', //runtime.getCurrentUser().email
-                subject: 'Error Al Registrar los Pagos',
-                body: 'Se ha identificado el siguiente Error al registrar los pagos de la nómina id: ' + internalIdFile + '\n' + resultRecordPayments[0].error
-            });
+            // log.debug("Error al registrar pago", "se envía email a diego.munoz@2win.cl"); // runtime.getCurrentUser().email
+            // email.send({
+            //     author: 46126, //runtime.getCurrentUser().id
+            //     recipients: 'diego.munoz@2win.cl', //runtime.getCurrentUser().email
+            //     subject: 'Error Al Registrar los Pagos',
+            //     body: 'Se ha identificado el siguiente Error al registrar los pagos de la nómina id: ' + internalIdFile + '\n' + resultRecordPayments[0].error
+            // });
+            log.debug('Error en nómina id: ' + internalIdFile, resultRecordPayments[0].error);
+
         } else {
-            email.send({
-                author: 46126, //runtime.getCurrentUser().id
-                recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
-                subject: 'Registrar Pagos',
-                body: 'Registro de pago completado satisfactoriamente, ID registro de pago: ' + resultRecordPayments
-            });
+            // email.send({
+            //     author: 46126, //runtime.getCurrentUser().id
+            //     recipients:'diego.munoz@2win.cl', //runtime.getCurrentUser().email
+            //     subject: 'Registrar Pagos',
+            //     body: 'Registro de pago finalizado. \n' + "Registro Pago: " + resultRecordPayments
+            // });
+            log.debug('Registro de pago finalizado', "Registro Pago: " + resultRecordPayments);
         }
     }
 
