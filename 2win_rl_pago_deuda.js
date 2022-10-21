@@ -13,16 +13,15 @@
      function _post(context) {
         try{
             log.debug("POST", context);
-            var rutCliente = context.rut;
+            var rutSinDv = context.rut.substring(0,context.rut.length-1);
+            var dv = context.rut.slice(-1);
+            var rutCliente = rutSinDv + '-' + dv;
             var nBoleta = context.monto;
             var medioDePago = context.medio_pago.toUpperCase();
             var resultRecordPayments = [];
 
-            if(medioDePago === 'PATPAC'){
-                payments.push(procesar.registerPayments(rutCliente, nBoleta));
-
-            } else if(medioDePago === 'SERVIPAG'){
-                payments.push(procesar.registerPayments(rutCliente, nBoleta));
+            if(medioDePago === 'PATPAC' || medioDePago === 'SERVIPAG'){
+                resultRecordPayments.push(procesar.registerPayments(rutCliente, nBoleta));
 
             } else if(medioDePago === 'CAJAVECINA'){
                 log.debug("rut cliente - cajavecina", rutCliente);
@@ -48,35 +47,8 @@
                 recordDepositApplication.commitLine({ sublistId: 'apply' });
                 var idDepositApp = recordDepositApplication.save();
                 log.debug("idDepositApp", idDepositApp);
-                payments.push(idDepositApp);
+                resultRecordPayments.push({"id_pago" : idDepositApp});
             }                    
-
-            log.debug("debug", "Arriba de idRecordPago");
-            var idRecordPago = procesar.registerPayments(rutCliente, nBoleta);
-            log.debug("idRecordPago", idRecordPago);
-            var idRecordDeposit = registerDepositApplicated(rutCliente, nBoleta);
-            log.debug("idRecordDeposit", idRecordDeposit);
-            var recordDepositApplication = record.transform({	
-                fromType: record.Type.CUSTOMER_DEPOSIT,
-                fromId: idRecordDeposit,
-                toType: record.Type.DEPOSIT_APPLICATION,
-                isDynamic: true 
-            });
-            var lines = recordDepositApplication.getLineCount({ sublistId: 'apply' });
-            for(var i = 0; i < lines; i++){
-                recordDepositApplication.selectLine({ sublistId:'apply', line: i });
-                recordDepositApplication.setCurrentSublistValue({ 
-                    sublistId:'apply', 
-                    fieldId:'apply', 
-                    value: true, 
-                    ignoreFieldChange: false 
-                });
-            };
-            recordDepositApplication.commitLine({ sublistId: 'apply' });
-            var idDepositApp = recordDepositApplication.save();
-            log.debug("idDepositApp", idDepositApp);
-            resultRecordPayments.push({"id_pago" : idDepositApp});
-            
         } catch(error){
             log.error("Error al procesar pago", error.message);
             resultRecordPayments.push({"error" : error.message});
