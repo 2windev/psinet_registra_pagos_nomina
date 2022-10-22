@@ -16,39 +16,12 @@
             var rutSinDv = context.rut.substring(0,context.rut.length-1);
             var dv = context.rut.slice(-1);
             var rutCliente = rutSinDv + '-' + dv;
-            var nBoleta = context.monto;
+            var folio = context.folio;
             var medioDePago = context.medio_pago.toUpperCase();
             var resultRecordPayments = [];
-
-            if(medioDePago === 'PATPAC' || medioDePago === 'SERVIPAG'){
-                resultRecordPayments.push(procesar.registerPayments(rutCliente, nBoleta));
-
-            } else if(medioDePago === 'CAJAVECINA'){
-                log.debug("rut cliente - cajavecina", rutCliente);
-                log.debug("monto - cajavecina", nBoleta);
-                var idRecordDeposit = registerDepositApplicated(rutCliente, nBoleta);
-                log.debug("idRecordDeposit", idRecordDeposit)
-                var recordDepositApplication = record.transform({	
-                    fromType: record.Type.CUSTOMER_DEPOSIT,
-                    fromId: idRecordDeposit,
-                    toType: record.Type.DEPOSIT_APPLICATION,
-                    isDynamic: true 
-                });
-                var lines = recordDepositApplication.getLineCount({ sublistId: 'apply' });
-                for(var i = 0; i < lines; i++){
-                    recordDepositApplication.selectLine({ sublistId:'apply', line: i });
-                    recordDepositApplication.setCurrentSublistValue({ 
-                        sublistId:'apply', 
-                        fieldId:'apply', 
-                        value: true, 
-                        ignoreFieldChange: false 
-                    });
-                };
-                recordDepositApplication.commitLine({ sublistId: 'apply' });
-                var idDepositApp = recordDepositApplication.save();
-                log.debug("idDepositApp", idDepositApp);
-                resultRecordPayments.push({"id_pago" : idDepositApp});
-            }                    
+            
+            resultRecordPayments.push(procesar.registerPayments(rutCliente, folio));
+            
         } catch(error){
             log.error("Error al procesar pago", error.message);
             resultRecordPayments.push({"error" : error.message});
