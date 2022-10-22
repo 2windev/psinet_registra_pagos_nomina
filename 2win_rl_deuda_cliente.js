@@ -65,7 +65,7 @@
                     "AND",
                     ["subsidiary","anyof",5],
                     "AND",
-                    ["custbody_2winrutapipos","is",rut],
+                    ["customermain.custentity_2wrut","is",rut],
                     "AND",
                     ["status","anyof","CustInvc:A"],
                     "AND",
@@ -79,7 +79,7 @@
                     search.createColumn({name: "custbody_2winfolioacepta", label: "folio_acepta"}),
                     search.createColumn({name: "grossamount", label: "gross_amount"}),
                     //TODO obtener valor de campo description en items.
-                    search.createColumn({name: "description", join: "item", label: "descripcion"})
+                    search.createColumn({name: "custbody_2winfolioacepta", label: "descripcion"}),
                 ]
             }
             return getDataSearch(structureCustomerDebt);
