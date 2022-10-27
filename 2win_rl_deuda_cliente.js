@@ -78,8 +78,8 @@
                     search.createColumn({name: "tranid", label: "doc_number"}),
                     search.createColumn({name: "custbody_2winfolioacepta", label: "folio_acepta"}),
                     search.createColumn({name: "grossamount", label: "gross_amount"}),
-                    //TODO obtener valor de campo description en items.
                     search.createColumn({name: "custbody_2winfolioacepta", label: "descripcion"}),
+                    search.createColumn({ name: 'duedate', label: "fecha_emision" })
                 ]
             }
             return getDataSearch(structureCustomerDebt);
