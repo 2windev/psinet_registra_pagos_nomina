@@ -1,4 +1,4 @@
-# psinet_registra_pagos_nomina - Bundle 456473 2win_registra_pagos_nomina_psinet
+# 2win_registra_pagos_nomina_psinet - Bundle 456473
 
 1. Crear nueva password con Suitelet *2win_sFTP_Toolet* para parámetro *sftp_origen_passwordguid* en tabla Parámetros de Facturación que incluya el siguiente script:
 
