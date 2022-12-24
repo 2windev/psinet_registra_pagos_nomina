@@ -3,8 +3,8 @@
  * @module ./2win_lib_procesar_datos_nomina.js
  * @NModuleScope Public
  **/
-define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'], 
-    function(file, record, nominas) {
+define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js', './2WinStaticParamsFacturacion.js'], 
+    function(file, record, nominas, paramsFact) {
 
         /**
          * @desc Devuelve el id del registro de nómina grabada en la tabla personalizada.
@@ -32,7 +32,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
          * @function readPayrollFile
          * @return array payments
          */
-        function readPayrollFile(internalIdFile, typeFile){
+        function readPayrollFile(internalIdFile, typeFile, medioPago){
             var payrollFile = file.load({
                 id: internalIdFile
             });
@@ -44,12 +44,12 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
             var iterator = payrollFile.lines.iterator();
             log.debug("size archivo", payrollFile.size)
             if(payrollFile.size < 10485760){  // Tamaño de archivo en byte debe ser menor a 10mb.
-                if(typeFile === 'PATPAC' || typeFile === 'SERVIPAG'){
+                if(typeFile === 'pacpat' || typeFile === 'servipag'){
                     iterator.each(function (){ return false; }) // Para saltar la primera línea.
                 }
                 iterator.each(function(line) {
                     log.debug("tipo de Archivo", typeFile);
-                    if(typeFile === 'PATPAC'){
+                    if(typeFile === 'pacpat'){
                         data = line.value.split(",");
                         for(i in data){
                             json[i] = data[i];
@@ -60,7 +60,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                         log.debug("Numero Boleta", nBoleta);
                         payments.push(registerPayments(rutCliente, nBoleta));
     
-                    } else if(typeFile === 'SERVIPAG'){
+                    } else if(typeFile === 'servipag'){
                         data = line.value;
                         log.debug("data en read Payroll File", data);
                         var folio = "";
@@ -81,7 +81,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                         log.debug("Numero folio", nBoleta);
                         payments.push(registerPayments(rutCliente, nBoleta));
     
-                    } else if(typeFile === 'CAJAVECINA'){
+                    } else if(typeFile === 'cajavecina'){
                         data = line.value;
                         log.debug("data en read Payroll File", data);
                         var monto = "";
@@ -100,7 +100,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                         nBoleta = Number(monto);
                         log.debug("rut cliente - cajavecina", rutCliente);
                         log.debug("monto - cajavecina", nBoleta);
-                        var idRecordDeposit = registerCustomerDeposit(rutCliente, nBoleta);
+                        var idRecordDeposit = registerCustomerDeposit(rutCliente, nBoleta, medioPago);
                         log.debug("idRecordDeposit", idRecordDeposit)
                         if(!idRecordDeposit){
                             payments.push({"error" : "Error al registrar depósito de cliente "});
@@ -189,8 +189,9 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
          * @function registerCustomerDeposit
          * @return Integer idRecordDeposit
          */
-        function registerCustomerDeposit(rutCliente, amount){
+        function registerCustomerDeposit(rutCliente, amount, medioPago){
             try{
+                var subsidiaria = paramsFact.getParam('subsidiaria_pago_web').number;
                 var internalIdCustomer = nominas.searchCustomer(rutCliente)[0].internal_id;
                 var objRecordDeposit = record.create({
                     type: "customerdeposit",
@@ -199,7 +200,8 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                 // log.debug("objRecordDeposit", objRecordDeposit);
                 objRecordDeposit.setValue({ fieldId: 'customer', value: internalIdCustomer });
                 objRecordDeposit.setValue({ fieldId: 'payment', value: amount });
-                objRecordDeposit.setValue({ fieldId: 'subsidiary', value: 5 });
+                objRecordDeposit.setValue({ fieldId: 'subsidiary', value: subsidiaria });
+                objRecordDeposit.setValue({ fieldId: "paymentoption", value: medioPago });
     
                 var idRecordDeposit = objRecordDeposit.save({
                     enableSourcing: true,
