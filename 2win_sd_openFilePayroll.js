@@ -8,9 +8,10 @@
 
         var resultSearchFile = nominas.searchFilePayroll();
         // log.debug("nóminas en directorio archivos_nominas", resultSearchFile);
-        var filePatPac = 'PATPAC';
-        var fileCajaVecina = 'CAJAVECINA';
-        var fileServipag = 'SERVIPAG';
+
+        var mediosDePago = nominas.searchPaymentMedia();
+        log.debug("medios de pago", mediosDePago);
+        
         var internalIdFile = "";
         var nameFile = "";
         var typeFile = "";
@@ -21,37 +22,37 @@
             type: format.Type.DATE
         });
         resultSearchFile.map(function(key){
-            typeFile = key.name.split('_')[0].toUpperCase();
+            typeFile = key.name.split('_')[0];
             extensionFile = key.name.split('.')[1];
-            if(typeFile === filePatPac){
+            if(typeFile == mediosDePago[0].name){
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile);
                 if(resultExistsPayroll === false){
-                    log.debug("resultado Archivo Pat Pac", key);
-                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
+                    log.debug("resultado Archivo Pac Pat", key);
+                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, mediosDePago[0].id_forma_pago);
                 }
-            } else if(typeFile === fileCajaVecina){
+            } else if(typeFile == mediosDePago[3].name){
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
                     log.debug("resultado Archivo Caja Vecina", key);
-                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
+                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, mediosDePago[3].id_forma_pago);
                 }
-            } else if(typeFile === fileServipag){
+            } else if(typeFile == mediosDePago[2].name){
                 internalIdFile = Number(key.internal_id);
                 nameFile = key.name;
                 resultExistsPayroll = nominas.searchPayroll(nameFile)
                 if(resultExistsPayroll == false){
                     log.debug("resultado Archivo Servipag", key);
-                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile);
+                    procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, mediosDePago[2].id_forma_pago);
                 } 
             }
         });  
     }
 
-    function procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, extensionFile){
+    function procesoRegistroPagoNomina(internalIdFile, nameFile, typeFile, date, medioPago){
         var datosNomina={
             name_file: nameFile,
             type_file: typeFile,
@@ -61,7 +62,8 @@
 
         var idRecordPayroll = procesar.registerPayroll(datosNomina);
         log.debug("id registro tabla Personalizada", idRecordPayroll);
-        var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile);
+        log.debug("medio de pago", medioPago)
+        var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile, medioPago);
         log.debug("resultado registro de pago", resultRecordPayments)
 
         //TODO implementaciónde envío de email y mejora al manejo de errores en 2 etapa.
