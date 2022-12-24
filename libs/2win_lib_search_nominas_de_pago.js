@@ -96,7 +96,7 @@ define(['N/search'],
                 var objSearch = {
                     type: 'file',
                     filters: [
-                        ['folder', 'is', '389'], // id folder 2win: 3824
+                        ['folder', 'is', 3824], // id folder 2win: 3824 -  id folder PsiNet SB: 389
                         'AND',
                         ['name', 'haskeywords', '*.txt'],
                         'OR',
@@ -138,10 +138,27 @@ define(['N/search'],
         return searchResults;
     };
 
+    function searchPaymentMedia(){
+        var objSearch = {
+            type: 'customrecord_2win_parametros_pago_psinet',
+            filters: [
+                ['custrecord1472', 'anyof', 5],
+            ],
+            columns: [
+                search.createColumn({ name: 'custrecord1473', label: 'name' }),  // name : custrecord1474 = ID Interno Forma de Pago.
+                search.createColumn({ name: 'custrecord1474', label: 'id_forma_pago' })
+            ]
+        }
+
+        return getDataSearch(objSearch);
+
+    }
+
     return {
         searchPayroll : searchPayroll,
         searchCustomer : searchCustomer,
         searchCustomerDebt : searchCustomerDebt,
-        searchFilePayroll : searchFilePayroll
+        searchFilePayroll : searchFilePayroll,
+        searchPaymentMedia : searchPaymentMedia
     }
 });
