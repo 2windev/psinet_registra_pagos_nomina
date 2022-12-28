@@ -52,7 +52,7 @@ define(['N/search'],
          * @function searchCustomerDebt
          * @return getDataSearch(structureCustomerDebt)
          */
-        function searchCustomerDebt(rut, nBoleta){
+        function searchCustomerDebt(rut, nBoleta, subsidiaria){
             try{
                 var structureCustomerDebt = {
                     type: search.Type.TRANSACTION,
@@ -60,7 +60,7 @@ define(['N/search'],
                         [
                             ["type","anyof","VendBill","CustInvc"],
                             "AND",
-                            ["subsidiary","anyof",5],
+                            ["subsidiary","anyof",subsidiaria],
                             "AND",
                             ["customermain.custentity_2wrut","is",rut],
                             "AND",
@@ -91,12 +91,11 @@ define(['N/search'],
          * @return Array getDataSearch()
          */
         function searchFilePayroll(){
-            //TODO mejorar filtro por fecha.
             try{
                 var objSearch = {
                     type: 'file',
                     filters: [
-                        ['folder', 'is', 3824], // id folder 2win: 3824 -  id folder PsiNet SB: 389
+                        ['folder', 'is', 389],
                         'AND',
                         ['name', 'haskeywords', '*.txt'],
                         'OR',
@@ -141,12 +140,10 @@ define(['N/search'],
     function searchPaymentMedia(){
         var objSearch = {
             type: 'customrecord_2win_parametros_pago_psinet',
-            filters: [
-                ['custrecord1472', 'anyof', 5],
-            ],
+            filters: [],
             columns: [
-                search.createColumn({ name: 'custrecord1473', label: 'name' }),  // name : custrecord1474 = ID Interno Forma de Pago.
-                search.createColumn({ name: 'custrecord1474', label: 'id_forma_pago' })
+                search.createColumn({ name: 'custrecord1473_2', label: 'name' }),
+                search.createColumn({ name: 'custrecord1474_2', label: 'id_forma_pago' })
             ]
         }
 
