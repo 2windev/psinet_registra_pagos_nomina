@@ -2,8 +2,8 @@
  *@NApiVersion 2.x
 *@NScriptType ScheduledScript
 */
-define(['N/email', 'N/runtime', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js', './libs/2WinStaticParamsFacturacion.js'],
-function(email, runtime, format, nominas, procesar, paramsFact) {
+define(['N/email', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js', './libs/2WinStaticParamsFacturacion.js'],
+function(email, format, nominas, procesar, paramsFact) {
     function execute(context) {
         var resultSearchFile = nominas.searchFilePayroll();
         var mediosDePago = nominas.searchPaymentMedia();
@@ -66,20 +66,19 @@ function(email, runtime, format, nominas, procesar, paramsFact) {
             log.debug("id registro tabla Personalizada", idRecordPayroll);
             log.debug("medio de pago", medioPago)
             var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile, medioPago, subsidiaria);
-            log.debug("resultado registro de pago", resultRecordPayments)
     
             if(resultRecordPayments[0].hasOwnProperty("error")){
                 log.debug("Error al registrar pago", "se envía email a soporte@2win.cl");
                 email.send({
                     author: paramsFact.getParam('id_empleado_envio_email').text, 
-                    recipients: 'soporte@2win.cl',
+                    recipients: paramsFact.getParam('pago_nominas_responsables').text,
                     subject: 'Error Al Registrar los Pagos',
                     body: 'Se ha identificado el siguiente Error al registrar los pagos de la nómina: ' + nameFile + ' id: ' + internalIdFile + '\n' + resultRecordPayments[0].error
                 });
                 log.debug('Error en nómina id: ' + internalIdFile, resultRecordPayments[0].error);
     
             } else {
-                log.debug('Registro de pago finalizado', "Registro Pago: " + resultRecordPayments);
+                log.debug("resultado registro de pago", resultRecordPayments)
             }
         } catch(e){
             log.debug("Error", "Error en proceso registro de pago de la nómina " + nameFile);

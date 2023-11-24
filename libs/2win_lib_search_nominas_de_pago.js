@@ -3,8 +3,8 @@
  * @module ./2win_lib_search_nominas_de_pago.js
  * @NModuleScope Public
  **/
-define(['N/search'], 
-    function(search){
+define(['N/search', './2WinStaticParamsFacturacion.js'], 
+    function(search, paramsFact){
         /**
          * @desc Búsqueda para válidar si nómina de pago ya fue procesada con anterioridad, si existe devolvera el internal id, si no, devolvera false.
          * @function searchFilePayroll
@@ -92,10 +92,11 @@ define(['N/search'],
          */
         function searchFilePayroll(){
             try{
+                var idFolder = paramsFact.getParam('pago_nominas_id_folder_archivo_nomina').text;
                 var objSearch = {
                     type: 'file',
                     filters: [
-                        ['folder', 'is', 389],
+                        ['folder', 'is', idFolder],
                         'AND',
                         ['name', 'haskeywords', '*.txt'],
                         'OR',
