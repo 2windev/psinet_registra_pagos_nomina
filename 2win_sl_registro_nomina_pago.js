@@ -2,9 +2,9 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet   
 */
- define(['N/runtime', 'N/email', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js'],
+ define(['N/runtime', 'N/email', 'N/format', './libs/2win_lib_search_nominas_de_pago.js', './libs/2win_lib_procesar_datos_nomina.js', './libs/2WinStaticParamsFacturacion.js'],
 
-    function(runtime, email, format, nominas, process) {
+    function(runtime, email, format, nominas, process, paramsFact) {
 
         function onRequest(context) {
             var bootstrap = '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">';
@@ -174,13 +174,13 @@
                     </div>
                 `;
             if(context.request.method === 'GET'){
-                //TODO carga de archivo csv en netsuite.
+                // carga de archivo csv en netsuite.
                 var firstHtml = `
                     ${formUploadFile}
                     ${scriptsBootstrap}
                 `;
 
-                //TODO Descarga archivo vía SFTP.
+                // Descarga archivo vía SFTP.
                 process.downloadFileForSftp();
 
                 context.response.write(firstHtml);
@@ -189,7 +189,7 @@
                 
                 
             } else {
-                //TODO Validación de extensión de archivo,  si es CSV se guardara en el file cabinet, si no, mostrará alerta indicando que se debe adjuntar un archivo de tipo CSV.
+                //Validación de extensión de archivo,  si es CSV se guardara en el file cabinet, si no, mostrará alerta indicando que se debe adjuntar un archivo de tipo CSV.
                 try{
                     var fileObj = context.request.files.file;
                     if(fileObj){
@@ -200,7 +200,7 @@
                         });
                         
                         if(fileObj.fileType.toLowerCase() ==='csv'){
-                            fileObj.folder = 3318;
+                            fileObj.folder = paramsFact.getParam('pago_nominas_id_folder_pago_nominas').text;
                             var id = fileObj.save();
 
                             var datosNomina={
