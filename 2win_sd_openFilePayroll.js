@@ -23,7 +23,6 @@ function(email, format, nominas, procesar, paramsFact) {
             var arrayNameFile = key.name.split('_');
             typeFile = arrayNameFile[0];
             subsidiaria = Number(arrayNameFile[1]);
-
             extensionFile = key.name.split('.')[1];
             if(typeFile == mediosDePago[0].name){
                 internalIdFile = Number(key.internal_id);
@@ -68,10 +67,11 @@ function(email, format, nominas, procesar, paramsFact) {
             var resultRecordPayments = procesar.readPayrollFile(internalIdFile, typeFile, medioPago, subsidiaria);
     
             if(resultRecordPayments[0].hasOwnProperty("error")){
-                log.debug("Error al registrar pago", "se envía email a soporte@2win.cl");
+                var emails = paramsFact.getParam('pago_nominas_responsables').text;
+                log.debug("Error al registrar pago", "se envía email a " + emails);
                 email.send({
                     author: paramsFact.getParam('id_empleado_envio_email').text, 
-                    recipients: paramsFact.getParam('pago_nominas_responsables').text,
+                    recipients: emails,
                     subject: 'Error Al Registrar los Pagos',
                     body: 'Se ha identificado el siguiente Error al registrar los pagos de la nómina: ' + nameFile + ' id: ' + internalIdFile + '\n' + resultRecordPayments[0].error
                 });
