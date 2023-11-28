@@ -39,7 +39,7 @@ function(sftp, params, record, format, runtime) {
 
                 fileNameDownload = fileName;
 
-                var folderNameDownload = "/resultados";     
+                var folderNameDownload = params.getParam('sftp_nominas_pagos_ruta').text;     
                 log.debug("Descarga Archivo Nómina - Archivo a Descargar", folderNameDownload + "/" + fileNameDownload);
 
                 var folderNameTarget = "archivo_nomina";
