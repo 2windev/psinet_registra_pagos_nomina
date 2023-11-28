@@ -8,13 +8,15 @@ function(sftp, params, record, format, runtime) {
 
     var paramConnect = {
         username: params.getParam('sftp_origen_username').text,
-        passwordGuid: params.getParam('sftp_origen_passwordguid').text, 
+        passwordGuid: params.getParam('sftp_origen_passwordgui_pago_nomina').text, //params.getParam('sftp_origen_passwordguid').text, 
         url: params.getParam('sftp_origen_url').text,
         directory: params.getParam('sftp_origen_directoryroot').text,
         port: Number(params.getParam('sftp_origen_port').number),
         hostKey: params.getParam('sftp_origen_hostkey').text,
         hostKeyType: params.getParam('sftp_origen_hostkeytype').text
     }
+
+    var idSubsidiria = params.getParam('pago_nominas_id_subsidiaria').text;
 
     function execute(context) {
 
@@ -29,9 +31,9 @@ function(sftp, params, record, format, runtime) {
             var fecha = new Date();
             // pago_pat_pac.csv
             var filesName = [
-                "patpac_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".csv",
-                "servipag_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".txt",
-                "cajavecina_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".txt"
+                "pacpat_" + idSubsidiria + "_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".csv",
+                "servipag_" + idSubsidiria + "_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".txt",
+                "cajavecina_" + idSubsidiria + "_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".txt"
             ]
 
             // Iterar los archivos que se deben descargar
