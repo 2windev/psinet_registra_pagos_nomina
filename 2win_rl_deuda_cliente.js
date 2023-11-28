@@ -13,7 +13,9 @@
             var rutSinDv = context.rut.substring(0,context.rut.length-1);
             var dv = context.rut.slice(-1);
             var rut = rutSinDv + '-' + dv;
-            var resultSearchDebt = searchCustomerDebt(rut);
+            log.debug("rutCliente", rut);
+            var subsidiaria = context.sub;
+            var resultSearchDebt = searchCustomerDebt(rut, subsidiaria);
             log.debug({ title: '@DomainSuccess', details: { "Deuda Cliente": resultSearchDebt } });
             if(!resultSearchDebt){
                 return {
@@ -55,7 +57,7 @@
      * @function searchCustomerDebt
      * @return getDataSearch(structureCustomerDebt)
      */
-    function searchCustomerDebt(rut){
+    function searchCustomerDebt(rut, subsidiaria){
         try{
             var structureCustomerDebt = {
                 type: search.Type.TRANSACTION,
@@ -63,7 +65,7 @@
                 [
                     ["type","anyof","VendBill","CustInvc"],
                     "AND",
-                    ["subsidiary","anyof",5],
+                    ["subsidiary","anyof",subsidiaria],
                     "AND",
                     ["customermain.custentity_2wrut","is",rut],
                     "AND",
