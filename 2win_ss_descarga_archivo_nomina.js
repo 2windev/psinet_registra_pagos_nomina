@@ -8,7 +8,7 @@ function(sftp, params, record, format, runtime) {
 
     var paramConnect = {
         username: params.getParam('sftp_origen_username').text,
-        passwordGuid: params.getParam('sftp_origen_passwordgui_pago_nomina').text, //params.getParam('sftp_origen_passwordguid').text, 
+        passwordGuid: params.getParam('sftp_origen_passwordgui_pago_nomina').text,
         url: params.getParam('sftp_origen_url').text,
         directory: params.getParam('sftp_origen_directoryroot').text,
         port: Number(params.getParam('sftp_origen_port').number),
