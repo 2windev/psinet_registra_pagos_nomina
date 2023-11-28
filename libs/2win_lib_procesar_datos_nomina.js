@@ -49,7 +49,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                         iterator.each(function (){ return false; }) // Para saltar la primera línea.
                     }
                     iterator.each(function(line) {
-                        log.debug("tipo de Archivo", typeFile);
+                        
                         if(typeFile === 'pacpat'){
                             data = line.value.split(",");
                             for(i in data){
@@ -63,7 +63,6 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
         
                         } else if(typeFile === 'servipag'){
                             data = line.value;
-                            log.debug("data en read Payroll File", data);
                             var folio = "";
                             var rut = "";
                             for(var i = 0; i <= data.length; i++){
@@ -127,11 +126,12 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                                 log.debug("idDepositApp", idDepositApp);
                                 payments.push(idDepositApp);
                             }
-                        }                    
+                        } 
+                        return true;                   
                     });
                 } catch(e){
                     var error = {};
-                    error = {"error" : "Problemas al procesar archivo de nómina: " + typeFile};
+                    error["error nómina " + typeFile] = e.message;
                     payments.push(error);
                 }
                 
@@ -152,14 +152,14 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
             var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta, subsidiaria);
             if(resultSearch == false){
                 log.debug("Búsqueda de deuda de cliente", "cliente sin deuda");
-                return "No se encontró deuda asociado al cliente";
+                return "No se encontró deuda asociado al cliente: " + rutCliente;
             }
             var error = {};
             try{
                 var internalIdDeuda = resultSearch[0].internal_id;
                 log.debug("internalIdDeuda", internalIdDeuda);
                 if(internalIdDeuda === false){
-                    var message = "no existe deuda asociada a cliente.";
+                    var message = "no existe deuda asociada a cliente :" + rutCliente;
                     error = {"error" : message}
                     payments.push(error);
                     return message;
@@ -178,12 +178,13 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                     id: pago_realizado,
                     isDynamic: true
                 });
+
                 objRecord.setValue({ fieldId: "paymentoption", value: medioPago });
                 var idRecordPago = objRecord.save({
                     isDynamic: true,
                     ignoreMandatoryFields: true
                 });
-                return idRecordPago;
+                return "Cliente: " + rutCliente + " - id deuda: " + internalIdDeuda + " - id pago: " + idRecordPago;
             } catch(e){
                 log.debug("Error Al intentar registrar pago", e.message);
                 error = {"error" : e.message};
@@ -222,7 +223,8 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
 
         return {
             readPayrollFile : readPayrollFile,
-            registerPayroll : registerPayroll
+            registerPayroll : registerPayroll,
+            registerPayments : registerPayments
         };
     
 });
