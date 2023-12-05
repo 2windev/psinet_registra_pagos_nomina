@@ -2,9 +2,11 @@
  *@NApiVersion 2.x
  *@NScriptType ScheduledScript
  */
-define(['./libs/2WinConexionSftp', './libs/2WinStaticParamsFacturacion', 'N/record', 'N/format', 'N/runtime'], 
+define(['./libs/2WinConexionSftp', './libs/2WinStaticParamsFacturacion', 'N/record', 'N/format', 'N/runtime', './libs/moment.locales.min.js'], 
 
-function(sftp, params, record, format, runtime) {
+function(sftp, params, record, format, runtime, moment) {
+
+    moment.locale('es');
 
     var paramConnect = {
         username: params.getParam('sftp_origen_username').text,
@@ -29,11 +31,13 @@ function(sftp, params, record, format, runtime) {
             // Crear conexión a servidor SFTP
             var connectSftp  = sftp.setConnection(paramConnect);
             var fecha = new Date();
-            // pago_pat_pac.csv
+            var anio = moment(fecha).format('YYYY');
+            var mes = moment(fecha).format('MM');
+            var dia = moment(fecha).format('DD');
             var filesName = [
-                "pacpat_" + idSubsidiria + "_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".csv",
-                "servipag_" + idSubsidiria + "_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".txt",
-                "cajavecina_" + idSubsidiria + "_" + fecha.getFullYear() + (fecha.getMonth() + 1) + fecha.getDate() + ".txt"
+                "pacpat_" + idSubsidiria + "_" + anio + mes + dia + ".csv",
+                "servipag_" + idSubsidiria + "_" + anio + mes + dia + ".txt",
+                "cajavecina_" + idSubsidiria + "_" + anio + mes + dia + ".txt"
             ]
 
             // Iterar los archivos que se deben descargar
