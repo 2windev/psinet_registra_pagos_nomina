@@ -36,9 +36,14 @@ Implementación para integración pago de nómias, las cuales, son descargadas d
 
 Se debe crear una nueva passwordguid con Suitelet *2win_sFTP_Toolet* (https://7391587-sb1.app.netsuite.com/app/site/hosting/scriptlet.nl?script=89&deploy=1), el password generado debe quedar en el parámetro *sftp_origen_passwordgui_pago_nomina* ubicado en la tabla Parámetros de Facturación.
 
-Para generar el passwordGUID es necesario agregar el id del script que se conectará por sftp:
+Para generar el passwordGUID es necesario completar los siguientes campos:
 
-    customscript_2win_descarga_arch_nomina
+|campo                 |valor                                 |
+|----------------------|--------------------------------------|
+|RESTRICT TO SCRIPT IDS|customscript_2win_descarga_arch_nomina|
+|RESTRICT TO DOMAINS   |172.174.249.155                       |
+|PASSWORD              |pC11A5yf                              |
+
 
 ## Tabla Parámetro de facturación.
 1. Parámetros de conexión a SFTP.
