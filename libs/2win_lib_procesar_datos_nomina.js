@@ -3,16 +3,16 @@
  * @module ./2win_lib_procesar_datos_nomina.js
  * @NModuleScope Public
  **/
-define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'], 
-    function(file, record, nominas) {
+define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
+    function (file, record, nominas) {
 
         /**
          * @desc Devuelve el id del registro de nómina grabada en la tabla personalizada.
          * @function registerPayroll
          * @return Integer idRecord
          */
-        function registerPayroll(datosNomina){
-            var objRecord  = record.create({
+        function registerPayroll(datosNomina) {
+            var objRecord = record.create({
                 type: "customrecord_2win_archivos_pago_proces",
                 isDynamic: true
             });
@@ -32,7 +32,7 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
          * @function readPayrollFile
          * @return array payments
          */
-        function readPayrollFile(internalIdFile, typeFile, medioPago, subsidiaria){
+        function readPayrollFile(internalIdFile, typeFile, medioPago, subsidiaria) {
             var payrollFile = file.load({
                 id: internalIdFile
             });
@@ -43,16 +43,16 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
             var nBoleta = 0;
             var iterator = payrollFile.lines.iterator();
             log.debug("size archivo", payrollFile.size)
-            if(payrollFile.size < 10485760){  // Tamaño de archivo en byte debe ser menor a 10mb.
-                try{
-                    if(typeFile === 'pacpat' || typeFile === 'servipag'){
-                        iterator.each(function (){ return false; }) // Para saltar la primera línea.
+            if (payrollFile.size < 10485760) {  // Tamaño de archivo en byte debe ser menor a 10mb.
+                try {
+                    if (typeFile === 'pacpat' || typeFile === 'servipag') {
+                        iterator.each(function () { return false; }) // Para saltar la primera línea.
                     }
-                    iterator.each(function(line) {
-                        
-                        if(typeFile === 'pacpat'){
+                    iterator.each(function (line) {
+
+                        if (typeFile === 'pacpat') {
                             data = line.value.split(",");
-                            for(i in data){
+                            for (i in data) {
                                 json[i] = data[i];
                             }
                             rutCliente = json[5];
@@ -60,65 +60,65 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                             log.debug("rut Cliente", rutCliente);
                             log.debug("Numero Boleta", nBoleta);
                             payments.push(registerPayments(rutCliente, nBoleta, medioPago, subsidiaria));
-        
-                        } else if(typeFile === 'servipag'){
+
+                        } else if (typeFile === 'servipag') {
                             data = line.value;
                             var folio = "";
                             var rut = "";
-                            for(var i = 0; i <= data.length; i++){
-                                if(i >= 26 && i <= 35){
+                            for (var i = 0; i <= data.length; i++) {
+                                if (i >= 26 && i <= 35) {
                                     folio += data[i];
                                 }
-                                if(i >= 36 && i <= 47){
+                                if (i >= 36 && i <= 47) {
                                     rut += data[i];
                                 }
                             }
-                            var rutSinDv = Number(rut.substring(0,rut.length-1));
+                            var rutSinDv = Number(rut.substring(0, rut.length - 1));
                             var dv = rut.slice(-1);
-                            rutCliente = rutSinDv + '-' + dv;                        
+                            rutCliente = rutSinDv + '-' + dv;
                             nBoleta = Number(folio);
                             log.debug("rut Cliente", rutCliente);
                             log.debug("Numero folio", nBoleta);
                             payments.push(registerPayments(rutCliente, nBoleta, medioPago, subsidiaria));
-        
-                        } else if(typeFile === 'cajavecina'){
+
+                        } else if (typeFile === 'cajavecina') {
                             data = line.value;
                             log.debug("data en read Payroll File", data);
                             var monto = "";
                             var rut = "";
-                            for(var i = 0; i <= data.length; i++){
-                                if(i >= 0 && i <= 14){
+                            for (var i = 0; i <= data.length; i++) {
+                                if (i >= 0 && i <= 14) {
                                     rut += data[i];
                                 }
-                                if(i >= 156 && i <= 171){
+                                if (i >= 156 && i <= 169) {
                                     monto += data[i];
                                 }
                             }
-                            var rutSinDv = Number(rut.substring(0,rut.length-1));
+                            var rutSinDv = Number(rut.substring(0, rut.length - 1));
                             var dv = rut.slice(-1);
-                            rutCliente = rutSinDv + '-' + dv;                        
+                            rutCliente = rutSinDv + '-' + dv;
                             nBoleta = Number(monto);
                             log.debug("rut cliente - cajavecina", rutCliente);
                             log.debug("monto - cajavecina", nBoleta);
                             var idRecordDeposit = registerCustomerDeposit(rutCliente, nBoleta, medioPago, subsidiaria);
                             log.debug("idRecordDeposit", idRecordDeposit)
-                            if(!idRecordDeposit){
-                                payments.push({"error" : "Error al registrar depósito de cliente "});
-                            }else {
-                                var recordDepositApplication = record.transform({	
+                            if (!idRecordDeposit) {
+                                payments.push({ "error": "Error al registrar depósito de cliente " });
+                            } else {
+                                var recordDepositApplication = record.transform({
                                     fromType: record.Type.CUSTOMER_DEPOSIT,
                                     fromId: idRecordDeposit,
                                     toType: record.Type.DEPOSIT_APPLICATION,
-                                    isDynamic: true 
+                                    isDynamic: true
                                 });
                                 var lines = recordDepositApplication.getLineCount({ sublistId: 'apply' });
-                                for(var i = 0; i < lines; i++){
-                                    recordDepositApplication.selectLine({ sublistId:'apply', line: i });
-                                    recordDepositApplication.setCurrentSublistValue({ 
-                                        sublistId:'apply', 
-                                        fieldId:'apply', 
-                                        value: true, 
-                                        ignoreFieldChange: false 
+                                for (var i = 0; i < lines; i++) {
+                                    recordDepositApplication.selectLine({ sublistId: 'apply', line: i });
+                                    recordDepositApplication.setCurrentSublistValue({
+                                        sublistId: 'apply',
+                                        fieldId: 'apply',
+                                        value: true,
+                                        ignoreFieldChange: false
                                     });
                                 };
                                 recordDepositApplication.commitLine({ sublistId: 'apply' });
@@ -126,18 +126,18 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                                 log.debug("idDepositApp", idDepositApp);
                                 payments.push(idDepositApp);
                             }
-                        } 
-                        return true;                   
+                        }
+                        return true;
                     });
-                } catch(e){
+                } catch (e) {
                     var error = {};
                     error["error nómina " + typeFile] = e.message;
                     payments.push(error);
                 }
-                
+
             } else {
                 var error = {};
-                error = {"error" : "Archivo pesa más de 10mb"};
+                error = { "error": "Archivo pesa más de 10mb" };
                 payments.push(error);
             }
             return payments;
@@ -148,19 +148,19 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
          * @function registerPayments
          * @return Integer idRecordPago
          */
-        function registerPayments(rutCliente, nBoleta, medioPago, subsidiaria){
+        function registerPayments(rutCliente, nBoleta, medioPago, subsidiaria) {
             var resultSearch = nominas.searchCustomerDebt(rutCliente, nBoleta, subsidiaria);
-            if(resultSearch == false){
+            if (resultSearch == false) {
                 log.debug("Búsqueda de deuda de cliente", "cliente sin deuda");
                 return "No se encontró deuda asociado al cliente: " + rutCliente;
             }
             var error = {};
-            try{
+            try {
                 var internalIdDeuda = resultSearch[0].internal_id;
                 log.debug("internalIdDeuda", internalIdDeuda);
-                if(internalIdDeuda === false){
+                if (internalIdDeuda === false) {
                     var message = "no existe deuda asociada a cliente :" + rutCliente;
-                    error = {"error" : message}
+                    error = { "error": message }
                     payments.push(error);
                     return message;
                 }
@@ -185,9 +185,9 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                     ignoreMandatoryFields: true
                 });
                 return "Cliente: " + rutCliente + " - id deuda: " + internalIdDeuda + " - id pago: " + idRecordPago;
-            } catch(e){
+            } catch (e) {
                 log.debug("Error Al intentar registrar pago", e.message);
-                error = {"error" : e.message};
+                error = { "error": e.message };
                 return error;
             }
         }
@@ -197,8 +197,8 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
          * @function registerCustomerDeposit
          * @return Integer idRecordDeposit
          */
-        function registerCustomerDeposit(rutCliente, amount, medioPago, subsidiaria){
-            try{
+        function registerCustomerDeposit(rutCliente, amount, medioPago, subsidiaria) {
+            try {
                 var internalIdCustomer = nominas.searchCustomer(rutCliente)[0].internal_id;
                 var objRecordDeposit = record.create({
                     type: "customerdeposit",
@@ -209,21 +209,21 @@ define(['N/file', 'N/record', './2win_lib_search_nominas_de_pago.js'],
                 objRecordDeposit.setValue({ fieldId: 'payment', value: amount });
                 objRecordDeposit.setValue({ fieldId: 'subsidiary', value: subsidiaria });
                 objRecordDeposit.setValue({ fieldId: "paymentoption", value: medioPago });
-    
+
                 var idRecordDeposit = objRecordDeposit.save({
                     enableSourcing: true,
                     ignoreMandatoryFields: true
                 });
                 return idRecordDeposit;
-            } catch(error){
+            } catch (error) {
                 log.debug("Error en la aplicación de deposito", error.message);
             }
-            
+
         }
 
         return {
-            readPayrollFile : readPayrollFile,
-            registerPayroll : registerPayroll
+            readPayrollFile: readPayrollFile,
+            registerPayroll: registerPayroll
         };
-    
-});
+
+    });
